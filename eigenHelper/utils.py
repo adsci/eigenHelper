@@ -1,3 +1,5 @@
+import numpy as np
+
 class NodeSet():
     def __init__(self):
         self.nodes = []
@@ -35,6 +37,17 @@ class NodeSet():
         assert self.nodes[id-1].getID() == id
         del self.nodes[id-1]
         self.renumber(id)
+
+    def getExEy(self):
+        xlist = []
+        ylist = []
+        idlist = []
+        for node in self.nodes:
+            xlist.append(node.getX())
+            ylist.append(node.getY())
+            idlist.append(str(node.getID()))
+        return (np.array(xlist), np.array(ylist), idlist)
+
 
 class Node():
     def __init__(self,x,y,id):
