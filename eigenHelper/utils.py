@@ -1,3 +1,4 @@
+from cmath import inf
 import numpy as np
 
 class NodeSet():
@@ -13,30 +14,37 @@ class NodeSet():
     def getNumberOfNodes(self):
         return len(self.nodes)
 
-    def addNode(self,x,y):
-        if not self.found(x,y):
-            self.nodes.append(Node(x,y,self.getNextID()))
+    def addNode(self,x,y,id):
+        fndCoords = self.foundCoords(x,y)
+        fndID, _ = self.foundID(id)
+        if not (fndCoords or fndID):
+            self.nodes.append(Node(x,y,id))
+            return True
+        return False
 
     def getNextID(self):
-        return len(self.nodes) + 1
+        maxID = -inf
+        for node in self.nodes:
+            if node.getID() > maxID:
+                maxID = node.getID()
+        return maxID + 1
 
-    def found(self,x,y):
+    def foundCoords(self,x,y):
         for node in self.nodes:
             if (abs(node.getX() - x) <= 1e-6) and (abs(node.getY() - y) < 1e-6):
                 return True
         return False
 
-    def renumber(self,fromID):
-        for node in self.nodes:
-            if node.getID() <= fromID:
-                continue
-            else:
-                node.setID(node.getID()-1)
+    def foundID(self,id):
+        for ind, node in enumerate(self.nodes):
+            if node.getID() == id:
+                return True, ind
+        return False, 10000
 
     def deleteNodeWithID(self,id):
-        assert self.nodes[id-1].getID() == id
-        del self.nodes[id-1]
-        self.renumber(id)
+        fnd, ind = self.foundID(id)
+        if fnd:
+            del self.nodes[ind]
 
     def getExEy(self):
         xlist = []
