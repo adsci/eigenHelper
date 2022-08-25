@@ -1,4 +1,3 @@
-from cmath import inf
 import numpy as np
 
 class NodeSet():
@@ -23,7 +22,7 @@ class NodeSet():
         return False
 
     def getNextID(self):
-        maxID = -inf
+        maxID = np.NINF
         for node in self.nodes:
             if node.getID() > maxID:
                 maxID = node.getID()
@@ -39,7 +38,7 @@ class NodeSet():
         for ind, node in enumerate(self.nodes):
             if node.getID() == id:
                 return True, ind
-        return False, 10000
+        return False, np.NAN
 
     def deleteNodeWithID(self,id):
         fnd, ind = self.foundID(id)

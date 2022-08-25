@@ -37,6 +37,8 @@ def modify_doc(doc):
 
     #node module callbacks
     def addNodeOnClick(nodeset, xCoordInput, yCoordInput, nidInput, dtext, nodeCDS):
+        if nidInput.value <= 0:
+            return
         added = nodeset.addNode(float(xCoordInput.value),float(yCoordInput.value),nidInput.value)
         if added:
             nidInput.value = nodeset.getNextID()
