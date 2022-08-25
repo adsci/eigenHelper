@@ -5,7 +5,7 @@ from bokeh.plotting import figure
 from functools import partial
 from utils import *
 
-def modify_doc(doc):
+def modify_doc(doc, debug=False):
     #Plot
     def makePlot(nsetCDS):
         p = figure(width=800, height=800)
@@ -32,8 +32,9 @@ def modify_doc(doc):
     delNodeNum = NumericInput(value=0, title="Node to be deleted:",mode='int', width=75)
     addNodeButton = Button(label="Add Node", button_type="primary", width=120 )
     delNodeButton = Button(label="Delete Node", button_type="danger", width=120 )
+    assignDOFsButton = Button(label="Assign DOFs", button_type="success", width=120 )
 
-    div = Div(text=nset.__str__(), width=150, height=300)
+    divNodes = Div(text=nset.printInfo(debug), width=250, height=300)
 
     #node module callbacks
     def addNodeOnClick(nodeset, xCoordInput, yCoordInput, nidInput, dtext, nodeCDS):
@@ -43,7 +44,7 @@ def modify_doc(doc):
         if added:
             nidInput.value = nodeset.getNextID()
         updateCoordData(nodeset,nodeCDS)
-        dtext.text=nodeset.__str__()
+        dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
     def delNodeOnClick(nodeset, delNodeInput, dtext, nodeCDS):
         if not nodeset.nodes or delNodeInput.value <= 0 or delNodeInput.value >= nodeset.getNextID():
@@ -51,7 +52,12 @@ def modify_doc(doc):
         nodeset.deleteNodeWithID(delNodeInput.value)
         delNodeInput.value = 0
         updateCoordData(nodeset, nodeCDS)
-        dtext.text=nodeset.__str__()
+        dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+
+    def assignDOFsOnClick(nodeset, dtext):
+        if nodeset.nodes:
+            nodeset.assignDOFs()
+            dtext.text=nodeset.printInfo(debug) + '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
 
     """
     Plot
@@ -63,15 +69,16 @@ def modify_doc(doc):
     """
     Handlers
     """
-    addNodeButton.on_click(partial(addNodeOnClick, nodeset=nset, xCoordInput=nX, yCoordInput=nY, nidInput=nID, dtext=div, nodeCDS=ncds))
-    delNodeButton.on_click(partial(delNodeOnClick, nodeset=nset, delNodeInput=delNodeNum, dtext=div, nodeCDS=ncds))
+    addNodeButton.on_click(partial(addNodeOnClick, nodeset=nset, xCoordInput=nX, yCoordInput=nY, nidInput=nID, dtext=divNodes, nodeCDS=ncds))
+    delNodeButton.on_click(partial(delNodeOnClick, nodeset=nset, delNodeInput=delNodeNum, dtext=divNodes, nodeCDS=ncds))
+    assignDOFsButton.on_click(partial(assignDOFsOnClick, nodeset=nset, dtext=divNodes))
 
     """
     Layout
     """
-    layout = row(column(nID, nX, nY, addNodeButton), column(Spacer(width=100,height=nX.height+10), \
-        Spacer(width=100,height=nX.height+10), delNodeNum, delNodeButton), div, p)
+    layout = row(column(nID, nX, nY, addNodeButton), column(Spacer(width=100,height=17), assignDOFsButton, \
+        Spacer(width=100,height=nX.height+10), delNodeNum, delNodeButton), divNodes, p)
     doc.add_root(layout)
     doc.title = "eigenHelper"
 
-modify_doc(curdoc())
+modify_doc(curdoc(),debug=True)

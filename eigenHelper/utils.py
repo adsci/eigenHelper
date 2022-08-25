@@ -4,10 +4,10 @@ class NodeSet():
     def __init__(self):
         self.nodes = []
 
-    def __str__(self):
+    def printInfo(self,debug=False):
         desc = "<b>Nodes</b>:<br>"
         for node in self.nodes:
-            desc += node.__str__() + "<br>"
+            desc += node.printInfo(debug) + "<br>"
         return desc
 
     def getNumberOfNodes(self):
@@ -55,14 +55,22 @@ class NodeSet():
             idlist.append(str(node.getID()))
         return (np.array(xlist), np.array(ylist), idlist)
 
+    def assignDOFs(self):
+        for i, node in enumerate(self.nodes):
+            node.setDOFs(np.array([3*(i+1)-2, 3*(i+1)-1, 3*(i+1)]))
+
 
 class Node():
     def __init__(self,x,y,id):
         self.coords=[x,y]
         self.id = id
+        self.dofs = []
 
-    def __str__(self):
-        return "Node " +str(self.getID()) + " at " + str(self.getCoords())
+    def printInfo(self, debug=False):
+        if debug:
+            return "Node " +str(self.getID()) + " at " + str(self.getCoords()) + " with DOFs " + str(self.getDOFs())
+        else:
+            return "Node " +str(self.getID()) + " at " + str(self.getCoords())
 
     def getID(self):
         return self.id
@@ -78,3 +86,9 @@ class Node():
 
     def setID(self,newID):
         self.id = newID
+
+    def getDOFs(self):
+        return self.dofs
+
+    def setDOFs(self,dofArray):
+        self.dofs = dofArray
