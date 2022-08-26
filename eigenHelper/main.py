@@ -1,154 +1,47 @@
 from bokeh.io import curdoc
-from bokeh.models import Div, NumericInput, Button, ColumnDataSource, LabelSet, CustomJS, MultiLine
 from bokeh.layouts import column, row, Spacer
-from bokeh.plotting import figure
 from functools import partial
 from utils import *
+from node import *
+from element import *
+from plot import *
 
 def modify_doc(doc, debug=False):
-    #Plot
-    def makePlot(nsetCDS, elsetCDS):
-        p = figure(width=800, height=800, match_aspect=True)
-        ### NODES
-        renderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
-        labels = LabelSet(x='x', y='y', text='IDs',
-              x_offset=5, y_offset=5, source=nsetCDS, render_mode='canvas')
-        p.add_layout(labels)
-        renderer.js_on_change('visible', CustomJS(args=dict(ls=labels), code="ls.visible = cb_obj.visible;"))
-        ### ELEMENTS
-        p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=5, line_color='black', legend_label="Elements")
-        ### LEGEND
-        p.legend.location = "top_left"
-        p.legend.click_policy="hide"
-        return p
 
-    def updateCoordData(nodeset, nodeCDS):
-        ex, ey, ids = nodeset.getExEy()
-        nodeCDS.data = {'x':ex, 'y':ey, 'IDs':ids}
+    #Create Node module
+    ndic = createNodeLayout(debug)
 
-    def updateElementData(elemset, elemCDS):
-        ex, ey = elemset.getExEy()
-        elemCDS.data = {'x':ex, 'y':ey}
+    #Create Element module
+    edic = createElementLayout(debug)
 
-    """
-    Node module
-    """
-    nset = NodeSet()
-    nIDWidget = NumericInput(value=1, title="Node ID:",mode='int', width=50,height=50)
-    nXWidget = NumericInput(value=0, title="x [m]:",mode='float', width=75,height=50)
-    nYWidget = NumericInput(value=0, title="y [m]:",mode='float', width=75)
-    delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
-    addNodeButton = Button(label="Add Node", button_type="primary", width=50 )
-    delNodeButton = Button(label="Delete Node", button_type="danger", width=50 )
-    assignDOFsButton = Button(label="Assign DOFs", button_type="success", width=50 )
-
-    divNodes = Div(text= "<b>Nodes</b>:<br>" + nset.printInfo(debug), width=250, height=300)
-
-    #node module callbacks
-    def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS):
-        if nidInput.value <= 0:
-            return
-        #check whether the node can be added
-        nNode = createNode(nodeset, float(nxWidget.value), float(nyWidget.value), nidInput.value)
-        if not nNode:
-            return
-        nodeset.add(nNode)
-        nidInput.value = nodeset.getNextID()
-        updateCoordData(nodeset,nodeCDS)
-        dtext.text= "<b>Nodes</b>:<br>"  + nodeset.printInfo(debug) +\
-             '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
-
-    def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS):
-        if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)):
-            return
-        nodeset.deleteEntityWithID(delNodeWidget.value)
-        delNodeWidget.value = 0
-        nidWidget.value = nodeset.getNextID()
-        updateCoordData(nodeset, nodeCDS)
-        dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
-
-    def assignDOFsOnClick(nodeset, dtext):
-        if nodeset.members:
-            nodeset.assignDOFs()
-            dtext.text=nodeset.printInfo(debug) + '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
-
-    """
-    Element module
-    """
-    eset = ElementSet()
-    eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50)
-    enaWidget = NumericInput(value=0, title="Node A:",mode='int', width=50,height=50)
-    enbWidget = NumericInput(value=0, title="Node B:",mode='int', width=50)
-    eYoungWidget = NumericInput(value=1, title="E [Pa]",mode='int', width=100,height=50)
-    eDensityWidget = NumericInput(value=1, title="rho [kg/m^3]:",mode='int', width=100,height=50)
-    eAreaWidget = NumericInput(value=1, title="A [m^2]:",mode='int', width=100,height=50)
-    eInertiaWidget = NumericInput(value=1, title="I [m^4]:",mode='int', width=100,height=50)
-    delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50)
-    addElemButton = Button(label="Add Element", button_type="primary", width=100 )
-    delElemButton = Button(label="Delete Element", button_type="danger", width=120 )
-
-    divElements = Div(text= "<b>Elements</b>:<br>" + eset.printInfo(debug), width=350, height=300)
-
-    #element module callbacks
-    def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget, densityWidget, areaWidget, inertiaWidget, dtext, elemCDS):
-        if eidWidget.value <= 0:
-            return
-        #check whether the element can be added
-        na = nodeset.getEntityWithID(naWidget.value)
-        nb = nodeset.getEntityWithID(nbWidget.value)
-        if not (na and nb):
-            return
-        nElement = createElement(elemset, nodeset, eidWidget.value, na, \
-            nb, {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
-        if not nElement:
-            return
-        elemset.add(nElement)
-        eidWidget.value = elemset.getNextID()
-        updateElementData(elemset,elemCDS)
-        dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debug)
-
-    def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS):
-        if (not elemset.members) or (not elemset.foundID(delElWidget.value)):
-            return
-        elemset.deleteEntityWithID(delElWidget.value)
-        delElWidget.value = 0
-        eidWidget.value = elemset.getNextID()
-        updateElementData(elemset, elemCDS)
-        dtext.text=elemset.printInfo(debug)
-
-    """
-    Plot
-    """
-    exNodes, eyNodes, idlist = nset.getExEy()
-    ncds = ColumnDataSource({'x':exNodes, 'y':eyNodes, 'IDs':idlist})
-    exElems, eyElems = eset.getExEy()
-    ecds = ColumnDataSource({'x':exElems, 'y':eyElems})
-    p = makePlot(ncds, ecds)
+    #Create Plot module
+    p, ncds, ecds = createPlotLayout(ndic['nset'], edic['eset'])
 
     """
     Handlers
     """
-    addNodeButton.on_click(partial(addNodeOnClick, nodeset=nset, nxWidget=nXWidget, nyWidget=nYWidget,\
-         nidInput=nIDWidget, dtext=divNodes, nodeCDS=ncds))
-    delNodeButton.on_click(partial(delNodeOnClick, nodeset=nset, nidWidget=nIDWidget, delNodeWidget=delNodeNumWidget, \
-        dtext=divNodes, nodeCDS=ncds))
-    assignDOFsButton.on_click(partial(assignDOFsOnClick, nodeset=nset, dtext=divNodes))
+    ndic['addNodeButton'].on_click(partial(addNodeOnClick, nodeset=ndic['nset'], nxWidget=ndic['nXWidget'], nyWidget=ndic['nYWidget'],\
+         nidInput=ndic['nIDWidget'], dtext=ndic['divNodes'], nodeCDS=ncds, debugInfo=debug))
+    ndic['delNodeButton'].on_click(partial(delNodeOnClick, nodeset=ndic['nset'], nidWidget=ndic['nIDWidget'], delNodeWidget=ndic['delNodeNumWidget'], \
+        dtext=ndic['divNodes'], nodeCDS=ncds, debugInfo=debug))
+    ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nodeset=ndic['nset'], dtext=ndic['divNodes'], debugInfo=debug))
 
-    addElemButton.on_click(partial(addElemOnClick, nodeset=nset, elemset=eset, eidWidget=eIDWidget,\
-        naWidget=enaWidget, nbWidget=enbWidget, youngWidget=eYoungWidget, densityWidget=eDensityWidget,\
-        areaWidget=eAreaWidget, inertiaWidget=eInertiaWidget, dtext=divElements, elemCDS=ecds))
-    delElemButton.on_click(partial(delElemOnClick, elemset=eset, eidWidget=eIDWidget, delElWidget=delElNumWidget, dtext=divElements, elemCDS=ecds))
+    edic['addElemButton'].on_click(partial(addElemOnClick, nodeset=ndic['nset'], elemset=edic['eset'], eidWidget=edic['eIDWidget'],\
+        naWidget=edic['enaWidget'], nbWidget=edic['enbWidget'], youngWidget=edic['eYoungWidget'], densityWidget=edic['eDensityWidget'],\
+        areaWidget=edic['eAreaWidget'], inertiaWidget=edic['eInertiaWidget'], dtext=edic['divElements'], elemCDS=ecds, debugInfo=debug))
+    edic['delElemButton'].on_click(partial(delElemOnClick, elemset=edic['eset'], eidWidget=edic['eIDWidget'], delElWidget=edic['delElNumWidget'],\
+         dtext=edic['divElements'], elemCDS=ecds, debugInfo=debug))
 
     """
     Layout
     """
-    nodeLayout = row(column(nIDWidget, nXWidget, nYWidget, addNodeButton), \
-        column(Spacer(width=100,height=17), assignDOFsButton, Spacer(width=100,height=nXWidget.height+10), \
-            delNodeNumWidget, delNodeButton), Spacer(width=25), divNodes)
-    elemLayout =  row(column(enaWidget, eYoungWidget, eAreaWidget, addElemButton), \
-                    column(enbWidget, eDensityWidget, eInertiaWidget), \
-                    column(eIDWidget, Spacer(width=100,height=eIDWidget.height+10), delElNumWidget, delElemButton) ,\
-                         Spacer(width=25), divElements)
+    nodeLayout = row(column(ndic['nIDWidget'], ndic['nXWidget'], ndic['nYWidget'], ndic['addNodeButton']), \
+        column(Spacer(width=100,height=17), ndic['assignDOFsButton'], Spacer(width=100,height=ndic['nXWidget'].height+10), \
+            ndic['delNodeNumWidget'], ndic['delNodeButton']), Spacer(width=25), ndic['divNodes'])
+    elemLayout =  row(column(edic['enaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], edic['addElemButton']), \
+                    column(edic['enbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
+                    column(edic['eIDWidget'], Spacer(width=100,height=edic['eIDWidget'].height+10), edic['delElNumWidget'], edic['delElemButton']) ,\
+                         Spacer(width=25), edic['divElements'])
 
     layout = row(column(nodeLayout, elemLayout), p)
     doc.add_root(layout)
