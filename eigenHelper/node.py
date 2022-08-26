@@ -2,7 +2,6 @@
 Node module with helper function and classes
 """
 from bokeh.models import Div, NumericInput, Button
-from functools import partial
 from utils import *
 
 class Node():

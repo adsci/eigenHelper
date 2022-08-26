@@ -1,5 +1,6 @@
 from bokeh.models import Div, NumericInput, Button
 from utils import *
+import calfem.core as cfc
 
 class Element():
     def __init__(self, id, nodeA, nodeB, prop):
