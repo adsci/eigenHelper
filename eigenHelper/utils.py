@@ -164,7 +164,7 @@ class ElementSet():
     def addElement(self,id, na, nb, elprop):
         fndNds = self.foundNodes(na,nb)
         fndID, _ = self.foundID(id)
-        if not (fndNds or fndID):
+        if not (fndNds or fndID) and not (na is nb):
             self.elements.append(Element(id,na,nb,elprop))
             return True
         return False
@@ -194,10 +194,10 @@ class ElementSet():
             del self.elements[ind]
 
     def getExEy(self):
-        ex = np.array([])
-        ey = np.array([])
+        ex = []
+        ey = []
         for elem in self.elements:
             iex, iey = elem.getExEy()
-            ex = np.concatenate((ex, iex))
-            ey = np.concatenate((ey, iey))
+            ex.append(iex)
+            ey.append(iey)
         return ex, ey

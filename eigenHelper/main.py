@@ -1,5 +1,5 @@
 from bokeh.io import curdoc
-from bokeh.models import Div, NumericInput, Button, ColumnDataSource, LabelSet, CustomJS
+from bokeh.models import Div, NumericInput, Button, ColumnDataSource, LabelSet, CustomJS, MultiLine
 from bokeh.layouts import column, row, Spacer
 from bokeh.plotting import figure
 from functools import partial
@@ -10,13 +10,13 @@ def modify_doc(doc, debug=False):
     def makePlot(nsetCDS, elsetCDS):
         p = figure(width=800, height=800, match_aspect=True)
         ### NODES
-        renderer = p.circle('x','y',source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
+        renderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
         labels = LabelSet(x='x', y='y', text='IDs',
               x_offset=5, y_offset=5, source=nsetCDS, render_mode='canvas')
         p.add_layout(labels)
         renderer.js_on_change('visible', CustomJS(args=dict(ls=labels), code="ls.visible = cb_obj.visible;"))
         ### ELEMENTS
-        p.line('x','y', source=elsetCDS, line_width=5, color='black', legend_label="Elements")
+        p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=5, line_color='black', legend_label="Elements")
         ### LEGEND
         p.legend.location = "top_left"
         p.legend.click_policy="hide"
@@ -55,7 +55,7 @@ def modify_doc(doc, debug=False):
         dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
     def delNodeOnClick(nodeset, delNodeInput, dtext, nodeCDS):
-        if not nodeset.nodes or delNodeInput.value <= 0 or delNodeInput.value >= nodeset.getNextID():
+        if (not nodeset.nodes) or (not nodeset.foundID(delNodeInput.value)):
             return
         nodeset.deleteNodeWithID(delNodeInput.value)
         delNodeInput.value = 0
@@ -88,15 +88,18 @@ def modify_doc(doc, debug=False):
     def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget, densityWidget, areaWidget, inertiaWidget, dtext, elemCDS):
         if eidWidget.value <= 0:
             return
-        added = elemset.addElement(eidWidget.value, nodeset.getNodeWithID(naWidget.value), nodeset.getNodeWithID(nbWidget.value), \
-            {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value}) 
-        if added:
-            eidWidget.value = elemset.getNextID()
-        updateElementData(elemset,elemCDS)
-        dtext.text=elemset.printInfo(debug)
+        fndA, _ = nodeset.foundID(naWidget.value)
+        fndB, _ = nodeset.foundID(nbWidget.value)
+        if fndA and fndB:
+            added = elemset.addElement(eidWidget.value, nodeset.getNodeWithID(naWidget.value), nodeset.getNodeWithID(nbWidget.value), \
+                {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
+            if added:
+                eidWidget.value = elemset.getNextID()
+            updateElementData(elemset,elemCDS)
+            dtext.text=elemset.printInfo(debug)
 
     def delElemOnClick(elemset, delElWidget, dtext, elemCDS):
-        if not elemset.elements or delElWidget.value <= 0 or delElWidget.value >= elemset.getNextID():
+        if (not elemset.elements) or (not elemset.foundID(delElWidget.value)):
             return
         elemset.deleteElemWithID(delElWidget.value)
         delElWidget.value = 0
@@ -131,10 +134,11 @@ def modify_doc(doc, debug=False):
     """
     nodeLayout = row(column(nIDWidget, nXWidget, nYWidget, addNodeButton), \
         column(Spacer(width=100,height=17), assignDOFsButton, Spacer(width=100,height=nXWidget.height+10), \
-            delNodeNumWidget, delNodeButton), divNodes)
+            delNodeNumWidget, delNodeButton), Spacer(width=25), divNodes)
     elemLayout =  row(column(enaWidget, eYoungWidget, eAreaWidget, addElemButton), \
                     column(enbWidget, eDensityWidget, eInertiaWidget), \
-                    column(eIDWidget, Spacer(width=100,height=eIDWidget.height+10), delElNumWidget, delElemButton) , divElements)
+                    column(eIDWidget, Spacer(width=100,height=eIDWidget.height+10), delElNumWidget, delElemButton) ,\
+                         Spacer(width=25), divElements)
 
     layout = row(column(nodeLayout, elemLayout), p)
     doc.add_root(layout)
