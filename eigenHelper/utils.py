@@ -3,6 +3,50 @@ import calfem.core as cfc
 
 np.set_printoptions(precision=3)
 
+
+class EntitySet():
+    def __init__(self):
+        self.members=[]
+
+    def printInfo(self, debug=False):
+        desc = ''
+        for member in self.members:
+            desc += member.printInfo(debug) + "<br>"
+        return desc
+
+    def add(self, newEntity):
+        self.members.append(newEntity)
+
+    def getSize(self):
+        return len(self.members)
+
+    def getNextID(self):
+        maxID = np.NINF
+        for member in self.members:
+            if member.getID() > maxID:
+                maxID = member.getID()
+        if maxID == np.NINF:
+            maxID = 0
+        return maxID + 1
+
+    def foundID(self,id):
+        for ind, member in enumerate(self.members):
+            if member.getID() == id:
+                return True, ind
+        return False, np.NAN
+
+    def deleteEntityWithID(self,id):
+        fnd, ind = self.foundID(id)
+        if fnd:
+            del self.members[ind]
+
+    def getEntityWithID(self,id):
+        fnd, ind = self.foundID(id)
+        if not fnd:
+            return False
+        return self.members[ind]
+
+
 class Node():
     def __init__(self,x,y,id):
         self.coords=[x,y]
@@ -37,72 +81,26 @@ class Node():
         self.dofs = dofArray
 
 
-class NodeSet():
-    def __init__(self):
-        self.nodes = []
-
-    def printInfo(self,debug=False):
-        desc = "<b>Nodes</b>:<br>"
-        for node in self.nodes:
-            desc += node.printInfo(debug) + "<br>"
-        return desc
-
-    def getNumberOfNodes(self):
-        return len(self.nodes)
-
-    def addNode(self,x,y,id):
-        fndCoords = self.foundCoords(x,y)
-        fndID, _ = self.foundID(id)
-        if not (fndCoords or fndID):
-            self.nodes.append(Node(x,y,id))
-            return True
-        return False
-
-    def getNextID(self):
-        maxID = np.NINF
-        for node in self.nodes:
-            if node.getID() > maxID:
-                maxID = node.getID()
-        if maxID == np.NINF:
-            maxID = 0
-        return maxID + 1
-
+class NodeSet(EntitySet):
     def foundCoords(self,x,y):
-        for node in self.nodes:
+        for node in self.members:
             if (abs(node.getX() - x) <= 1e-6) and (abs(node.getY() - y) < 1e-6):
                 return True
         return False
-
-    def foundID(self,id):
-        for ind, node in enumerate(self.nodes):
-            if node.getID() == id:
-                return True, ind
-        return False, np.NAN
-
-    def deleteNodeWithID(self,id):
-        fnd, ind = self.foundID(id)
-        if fnd:
-            del self.nodes[ind]
 
     def getExEy(self):
         xlist = []
         ylist = []
         idlist = []
-        for node in self.nodes:
+        for node in self.members:
             xlist.append(node.getX())
             ylist.append(node.getY())
             idlist.append(str(node.getID()))
         return (np.array(xlist), np.array(ylist), idlist)
 
     def assignDOFs(self):
-        for i, node in enumerate(self.nodes):
+        for i, node in enumerate(self.members):
             node.setDOFs(np.array([3*(i+1)-2, 3*(i+1)-1, 3*(i+1)]))
-
-    def getNodeWithID(self, id):
-        fnd, ind = self.foundID(id)
-        if not fnd:
-            return
-        return self.nodes[ind]
 
 
 class Element():
@@ -110,7 +108,7 @@ class Element():
         self.id = id
         self.na = nodeA
         self.nb = nodeB
-        self.edof = self.na.getDOFs() + self.nb.getDOFs()
+        self.edof = np.concatenate((self.na.getDOFs(),self.nb.getDOFs()))
         self.properties = prop
         self.computeMatrices()
 
@@ -150,58 +148,40 @@ class Element():
             return info
 
 
-class ElementSet():
-    def __init__(self):
-        self.elements = []
-
-    def printInfo(self,debug=False):
-        desc = "<b>Elements</b>:<br>"
-        for elem in self.elements:
-            desc += elem.printInfo(debug) + "<br><br>"
-        return desc
-
-    def getNumberOfElements(self):
-        return len(self.elements)
-
-    def addElement(self,id, na, nb, elprop):
-        fndNds = self.foundNodes(na,nb)
-        fndID, _ = self.foundID(id)
-        if not (fndNds or fndID) and not (na is nb):
-            self.elements.append(Element(id,na,nb,elprop))
-            return True
-        return False
-
-    def getNextID(self):
-        maxID = np.NINF
-        for elem in self.elements:
-            if elem.getID() > maxID:
-                maxID = elem.getID()
-        if maxID == np.NINF:
-            maxID = 0
-        return maxID + 1
-
+class ElementSet(EntitySet):
     def foundNodes(self,n1,n2):
-        for elem in self.elements:
+        for elem in self.members:
             if ((elem.na is n1) and (elem.nb is n2)) or ((elem.na is n2) and (elem.nb is n1)):
                 return True
         return False
 
-    def foundID(self,id):
-        for ind, elem in enumerate(self.elements):
-            if elem.getID() == id:
-                return True, ind
-        return False, np.NAN
-
-    def deleteElemWithID(self,id):
-        fnd, ind = self.foundID(id)
-        if fnd:
-            del self.elements[ind]
-
     def getExEy(self):
         ex = []
         ey = []
-        for elem in self.elements:
+        for elem in self.members:
             iex, iey = elem.getExEy()
             ex.append(iex)
             ey.append(iey)
         return ex, ey
+
+
+
+def createNode(nodeset, x, y, id):
+    fndCoords = nodeset.foundCoords(x,y)
+    fndID, _ = nodeset.foundID(id)
+    if not (fndCoords or fndID):
+        newNode = Node(x,y,id)
+        return newNode
+    return False
+
+def createElement(elset, nset, id, na, nb, elprop):
+    fndA, _ = nset.foundID(na.getID())
+    fndB, _ = nset.foundID(nb.getID())
+    if not (fndA and fndB):
+        return False
+    fndNds = elset.foundNodes(na,nb)
+    fndID, _ = elset.foundID(id)
+    if not (fndNds or fndID) and not (na is nb):
+        newElement = Element(id,na,nb,elprop)
+        return newElement
+    return False

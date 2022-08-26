@@ -42,28 +42,33 @@ def modify_doc(doc, debug=False):
     delNodeButton = Button(label="Delete Node", button_type="danger", width=50 )
     assignDOFsButton = Button(label="Assign DOFs", button_type="success", width=50 )
 
-    divNodes = Div(text=nset.printInfo(debug), width=250, height=300)
+    divNodes = Div(text= "<b>Nodes</b>:<br>" + nset.printInfo(debug), width=250, height=300)
 
     #node module callbacks
     def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS):
         if nidInput.value <= 0:
             return
-        added = nodeset.addNode(float(nxWidget.value),float(nyWidget.value),nidInput.value)
+        #check whether the node can be added
+        nNode = createNode(nodeset, float(nxWidget.value), float(nyWidget.value), nidInput.value)
+        if not nNode:
+            return
+        nodeset.add(nNode)
         nidInput.value = nodeset.getNextID()
         updateCoordData(nodeset,nodeCDS)
-        dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+        dtext.text= "<b>Nodes</b>:<br>"  + nodeset.printInfo(debug) +\
+             '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
     def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS):
-        if (not nodeset.nodes) or (not nodeset.foundID(delNodeWidget.value)):
+        if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)):
             return
-        nodeset.deleteNodeWithID(delNodeWidget.value)
+        nodeset.deleteEntityWithID(delNodeWidget.value)
         delNodeWidget.value = 0
         nidWidget.value = nodeset.getNextID()
         updateCoordData(nodeset, nodeCDS)
         dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
     def assignDOFsOnClick(nodeset, dtext):
-        if nodeset.nodes:
+        if nodeset.members:
             nodeset.assignDOFs()
             dtext.text=nodeset.printInfo(debug) + '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
 
@@ -82,31 +87,34 @@ def modify_doc(doc, debug=False):
     addElemButton = Button(label="Add Element", button_type="primary", width=100 )
     delElemButton = Button(label="Delete Element", button_type="danger", width=120 )
 
-    divElements = Div(text=eset.printInfo(debug), width=350, height=300)
+    divElements = Div(text= "<b>Elements</b>:<br>" + eset.printInfo(debug), width=350, height=300)
 
     #element module callbacks
     def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget, densityWidget, areaWidget, inertiaWidget, dtext, elemCDS):
         if eidWidget.value <= 0:
             return
-        fndA, _ = nodeset.foundID(naWidget.value)
-        fndB, _ = nodeset.foundID(nbWidget.value)
-        if fndA and fndB:
-            added = elemset.addElement(eidWidget.value, nodeset.getNodeWithID(naWidget.value), nodeset.getNodeWithID(nbWidget.value), \
-                {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
-
-            eidWidget.value = elemset.getNextID()
-            updateElementData(elemset,elemCDS)
-            dtext.text=elemset.printInfo(debug)
+        #check whether the element can be added
+        na = nodeset.getEntityWithID(naWidget.value)
+        nb = nodeset.getEntityWithID(nbWidget.value)
+        if not (na and nb):
+            return
+        nElement = createElement(elemset, nodeset, eidWidget.value, na, \
+            nb, {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
+        if not nElement:
+            return
+        elemset.add(nElement)
+        eidWidget.value = elemset.getNextID()
+        updateElementData(elemset,elemCDS)
+        dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debug)
 
     def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS):
-        if (not elemset.elements) or (not elemset.foundID(delElWidget.value)):
+        if (not elemset.members) or (not elemset.foundID(delElWidget.value)):
             return
-        elemset.deleteElemWithID(delElWidget.value)
+        elemset.deleteEntityWithID(delElWidget.value)
         delElWidget.value = 0
         eidWidget.value = elemset.getNextID()
         updateElementData(elemset, elemCDS)
         dtext.text=elemset.printInfo(debug)
-
 
     """
     Plot
