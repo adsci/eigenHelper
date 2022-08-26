@@ -45,20 +45,20 @@ def modify_doc(doc, debug=False):
     divNodes = Div(text=nset.printInfo(debug), width=250, height=300)
 
     #node module callbacks
-    def addNodeOnClick(nodeset, xCoordInput, yCoordInput, nidInput, dtext, nodeCDS):
+    def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS):
         if nidInput.value <= 0:
             return
-        added = nodeset.addNode(float(xCoordInput.value),float(yCoordInput.value),nidInput.value)
-        if added:
-            nidInput.value = nodeset.getNextID()
+        added = nodeset.addNode(float(nxWidget.value),float(nyWidget.value),nidInput.value)
+        nidInput.value = nodeset.getNextID()
         updateCoordData(nodeset,nodeCDS)
         dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
-    def delNodeOnClick(nodeset, delNodeInput, dtext, nodeCDS):
-        if (not nodeset.nodes) or (not nodeset.foundID(delNodeInput.value)):
+    def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS):
+        if (not nodeset.nodes) or (not nodeset.foundID(delNodeWidget.value)):
             return
-        nodeset.deleteNodeWithID(delNodeInput.value)
-        delNodeInput.value = 0
+        nodeset.deleteNodeWithID(delNodeWidget.value)
+        delNodeWidget.value = 0
+        nidWidget.value = nodeset.getNextID()
         updateCoordData(nodeset, nodeCDS)
         dtext.text=nodeset.printInfo(debug) + '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
@@ -93,16 +93,17 @@ def modify_doc(doc, debug=False):
         if fndA and fndB:
             added = elemset.addElement(eidWidget.value, nodeset.getNodeWithID(naWidget.value), nodeset.getNodeWithID(nbWidget.value), \
                 {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
-            if added:
-                eidWidget.value = elemset.getNextID()
+
+            eidWidget.value = elemset.getNextID()
             updateElementData(elemset,elemCDS)
             dtext.text=elemset.printInfo(debug)
 
-    def delElemOnClick(elemset, delElWidget, dtext, elemCDS):
+    def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS):
         if (not elemset.elements) or (not elemset.foundID(delElWidget.value)):
             return
         elemset.deleteElemWithID(delElWidget.value)
         delElWidget.value = 0
+        eidWidget.value = elemset.getNextID()
         updateElementData(elemset, elemCDS)
         dtext.text=elemset.printInfo(debug)
 
@@ -119,15 +120,16 @@ def modify_doc(doc, debug=False):
     """
     Handlers
     """
-    addNodeButton.on_click(partial(addNodeOnClick, nodeset=nset, xCoordInput=nXWidget, yCoordInput=nYWidget,\
+    addNodeButton.on_click(partial(addNodeOnClick, nodeset=nset, nxWidget=nXWidget, nyWidget=nYWidget,\
          nidInput=nIDWidget, dtext=divNodes, nodeCDS=ncds))
-    delNodeButton.on_click(partial(delNodeOnClick, nodeset=nset, delNodeInput=delNodeNumWidget, dtext=divNodes, nodeCDS=ncds))
+    delNodeButton.on_click(partial(delNodeOnClick, nodeset=nset, nidWidget=nIDWidget, delNodeWidget=delNodeNumWidget, \
+        dtext=divNodes, nodeCDS=ncds))
     assignDOFsButton.on_click(partial(assignDOFsOnClick, nodeset=nset, dtext=divNodes))
 
     addElemButton.on_click(partial(addElemOnClick, nodeset=nset, elemset=eset, eidWidget=eIDWidget,\
         naWidget=enaWidget, nbWidget=enbWidget, youngWidget=eYoungWidget, densityWidget=eDensityWidget,\
         areaWidget=eAreaWidget, inertiaWidget=eInertiaWidget, dtext=divElements, elemCDS=ecds))
-    delElemButton.on_click(partial(delElemOnClick, elemset=eset, delElWidget=delElNumWidget, dtext=divElements, elemCDS=ecds))
+    delElemButton.on_click(partial(delElemOnClick, elemset=eset, eidWidget=eIDWidget, delElWidget=delElNumWidget, dtext=divElements, elemCDS=ecds))
 
     """
     Layout

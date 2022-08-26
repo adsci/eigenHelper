@@ -63,6 +63,8 @@ class NodeSet():
         for node in self.nodes:
             if node.getID() > maxID:
                 maxID = node.getID()
+        if maxID == np.NINF:
+            maxID = 0
         return maxID + 1
 
     def foundCoords(self,x,y):
@@ -174,6 +176,8 @@ class ElementSet():
         for elem in self.elements:
             if elem.getID() > maxID:
                 maxID = elem.getID()
+        if maxID == np.NINF:
+            maxID = 0
         return maxID + 1
 
     def foundNodes(self,n1,n2):
