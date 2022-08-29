@@ -77,7 +77,12 @@ def createElement(elset, nset, id, na, nb, elprop):
         return newElement
     return False
 
+def updateElementData(elemset, elemCDS):
+    ex, ey = elemset.getExEy()
+    elemCDS.data = {'x':ex, 'y':ey}
 
+def updateElementText(divText, elemset, debugInfo):
+    divText.text = "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
 """
 Element module callbacks
 """
@@ -97,7 +102,8 @@ def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget,
     elemset.add(nElement)
     eidWidget.value = elemset.getNextID()
     updateElementData(elemset,elemCDS)
-    dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
+    updateElementText(dtext, elemset, debugInfo)
+    # dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
 
 def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS, debugInfo):
     if (not elemset.members) or (not elemset.foundID(delElWidget.value)):
@@ -106,11 +112,14 @@ def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS, debugInfo):
     delElWidget.value = 0
     eidWidget.value = elemset.getNextID()
     updateElementData(elemset, elemCDS)
-    dtext.text=elemset.printInfo(debugInfo)
+    updateElementText(dtext, elemset, debugInfo)
+    # dtext.text=elemset.printInfo(debugInfo)
 
-def updateElementData(elemset, elemCDS):
-    ex, ey = elemset.getExEy()
-    elemCDS.data = {'x':ex, 'y':ey}
+def delAllElemOnClick(elemset, eidWidget, dtext, elemCDS, debugInfo):
+    elemset.clear()
+    eidWidget.value = elemset.getNextID()
+    updateElementData(elemset, elemCDS)
+    updateElementText(dtext, elemset, debugInfo)
 
 
 """
@@ -127,10 +136,12 @@ def createElementLayout(debug=False):
     eInertiaWidget = NumericInput(value=1, title="I [m^4]:",mode='int', width=100,height=50)
     delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50)
     addElemButton = Button(label="Add Element", button_type="primary", width=100 )
-    delElemButton = Button(label="Delete Element", button_type="danger", width=120 )
-    divElements = Div(text= "<b>Elements</b>:<br>" + eset.printInfo(debug), width=350, height=300)
+    delElemButton = Button(label="Delete Element", button_type="warning", width=120 )
+    delAllElemButton = Button(label="Delete All Elements", button_type="danger", width=120 )
+    divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
-        'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, 'divElements':divElements}
+        'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
+        'delAllElemButton':delAllElemButton, 'divElements':divElements}
     return elemLayoutDict

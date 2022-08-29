@@ -13,6 +13,9 @@ class EntitySet():
             desc += member.printInfo(debug) + "<br>"
         return desc
 
+    def clear(self):
+        self.members=[]
+
     def add(self, newEntity):
         self.members.append(newEntity)
 

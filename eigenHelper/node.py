@@ -67,6 +67,13 @@ def createNode(nodeset, x, y, id):
         return newNode
     return False
 
+def updateCoordData(nodeset, nodeCDS):
+    ex, ey, ids = nodeset.getExEy()
+    nodeCDS.data = {'x':ex, 'y':ey, 'IDs':ids}
+
+def updateNodeText(divText, nodeset, debugInfo):
+    divText.text = "<b>Nodes</b>:<br>"  + nodeset.printInfo(debugInfo)
+
 
 """
 Node module callbacks
@@ -81,8 +88,8 @@ def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS, debugI
     nodeset.add(nNode)
     nidInput.value = nodeset.getNextID()
     updateCoordData(nodeset, nodeCDS)
-    dtext.text= "<b>Nodes</b>:<br>"  + nodeset.printInfo(debugInfo) +\
-            '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+    updateNodeText(dtext, nodeset, debugInfo)
+    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
 def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS, debugInfo):
     if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)):
@@ -91,17 +98,21 @@ def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS, debugInfo)
     delNodeWidget.value = 0
     nidWidget.value = nodeset.getNextID()
     updateCoordData(nodeset, nodeCDS)
-    dtext.text= "<b>Nodes</b>:<br>"  + nodeset.printInfo(debugInfo) +\
-            '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+    updateNodeText(dtext, nodeset, debugInfo)
+    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+
+def delAllNodesOnClick(nodeset, nidWidget, dtext, nodeCDS, debugInfo):
+    nodeset.clear()
+    nidWidget.value = nodeset.getNextID()
+    updateCoordData(nodeset, nodeCDS)
+    updateNodeText(dtext, nodeset, debugInfo)
+    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
 def assignDOFsOnClick(nodeset, dtext, debugInfo):
     if nodeset.members:
         nodeset.assignDOFs()
-        dtext.text=nodeset.printInfo(debugInfo) + '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
-
-def updateCoordData(nodeset, nodeCDS):
-    ex, ey, ids = nodeset.getExEy()
-    nodeCDS.data = {'x':ex, 'y':ey, 'IDs':ids}
+        updateNodeText(dtext, nodeset, debugInfo)
+        dtext.text += '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
 
 
 """
@@ -114,11 +125,12 @@ def createNodeLayout(debug=False):
     nYWidget = NumericInput(value=0, title="y [m]:",mode='float', width=75)
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
     addNodeButton = Button(label="Add Node", button_type="primary", width=50 )
-    delNodeButton = Button(label="Delete Node", button_type="danger", width=50 )
+    delNodeButton = Button(label="Delete Node", button_type="warning", width=50 )
     assignDOFsButton = Button(label="Assign DOFs", button_type="success", width=50 )
-    divNodes = Div(text= "<b>Nodes</b>:<br>" + nset.printInfo(debug), width=250, height=300)
+    delAllNodesButton = Button(label="Delete All Nodes", button_type="danger", width=100 )
+    divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Assign DOFs when node input ready</b></p>', width=250, height=300)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
-        'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes}
+        'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes}
     return nodeLayoutDict
