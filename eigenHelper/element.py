@@ -83,6 +83,16 @@ def updateElementData(elemset, elemCDS):
 
 def updateElementText(divText, elemset, debugInfo):
     divText.text = "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
+
+def activateElementModule(edict):
+    for key, val in edict.items():
+        val.disabled = False
+
+def deactivateElementModule(edict):
+    for key, val in edict.items():
+        val.disabled = True
+    edict['divElements'].disabled = False
+
 """
 Element module callbacks
 """
@@ -106,7 +116,7 @@ def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget,
     # dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
 
 def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS, debugInfo):
-    if (not elemset.members) or (not elemset.foundID(delElWidget.value)):
+    if (not elemset.members) or (not elemset.foundID(delElWidget.value)[0]):
         return
     elemset.deleteEntityWithID(delElWidget.value)
     delElWidget.value = 0
@@ -127,17 +137,17 @@ Element module layout
 """
 def createElementLayout(debug=False):
     eset = ElementSet()
-    eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50)
-    enaWidget = NumericInput(value=0, title="Node A:",mode='int', width=50,height=50)
-    enbWidget = NumericInput(value=0, title="Node B:",mode='int', width=50)
-    eYoungWidget = NumericInput(value=1, title="E [Pa]",mode='int', width=100,height=50)
-    eDensityWidget = NumericInput(value=1, title="rho [kg/m^3]:",mode='int', width=100,height=50)
-    eAreaWidget = NumericInput(value=1, title="A [m^2]:",mode='int', width=100,height=50)
-    eInertiaWidget = NumericInput(value=1, title="I [m^4]:",mode='int', width=100,height=50)
-    delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50)
-    addElemButton = Button(label="Add Element", button_type="primary", width=100 )
-    delElemButton = Button(label="Delete Element", button_type="warning", width=120 )
-    delAllElemButton = Button(label="Delete All Elements", button_type="danger", width=120 )
+    eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50, disabled=True)
+    enaWidget = NumericInput(value=0, title="Node A:",mode='int', width=50,height=50, disabled=True)
+    enbWidget = NumericInput(value=0, title="Node B:",mode='int', width=50, disabled=True)
+    eYoungWidget = NumericInput(value=1, title="E [Pa]",mode='int', width=100,height=50, disabled=True)
+    eDensityWidget = NumericInput(value=1, title="rho [kg/m^3]:",mode='int', width=100,height=50, disabled=True)
+    eAreaWidget = NumericInput(value=1, title="A [m^2]:",mode='int', width=100,height=50, disabled=True)
+    eInertiaWidget = NumericInput(value=1, title="I [m^4]:",mode='int', width=100,height=50, disabled=True)
+    delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50, disabled=True)
+    addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
+    delElemButton = Button(label="Delete Element", button_type="warning", width=120, disabled=True )
+    delAllElemButton = Button(label="Delete All Elements", button_type="danger", width=120, disabled=True )
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \

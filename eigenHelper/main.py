@@ -22,11 +22,11 @@ def modify_doc(doc, debug=False):
     """
     ndic['addNodeButton'].on_click(partial(addNodeOnClick, nodeset=ndic['nset'], nxWidget=ndic['nXWidget'], nyWidget=ndic['nYWidget'],\
          nidInput=ndic['nIDWidget'], dtext=ndic['divNodes'], nodeCDS=ncds, debugInfo=debug))
-    ndic['delNodeButton'].on_click(partial(delNodeOnClick, nodeset=ndic['nset'], nidWidget=ndic['nIDWidget'], \
+    ndic['delNodeButton'].on_click(partial(delNodeOnClick, nodeset=ndic['nset'], elModule=edic, nidWidget=ndic['nIDWidget'], \
          delNodeWidget=ndic['delNodeNumWidget'], dtext=ndic['divNodes'], nodeCDS=ncds, debugInfo=debug))
-    ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nodeset=ndic['nset'], nidWidget=ndic['nIDWidget'], \
+    ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nodeset=ndic['nset'], elModule=edic, nidWidget=ndic['nIDWidget'], \
          dtext=ndic['divNodes'], nodeCDS=ncds, debugInfo=debug))
-    ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nodeset=ndic['nset'], dtext=ndic['divNodes'], debugInfo=debug))
+    ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nodeset=ndic['nset'], elModule=edic, dtext=ndic['divNodes'], debugInfo=debug))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nodeset=ndic['nset'], elemset=edic['eset'], eidWidget=edic['eIDWidget'],\
         naWidget=edic['enaWidget'], nbWidget=edic['enbWidget'], youngWidget=edic['eYoungWidget'], densityWidget=edic['eDensityWidget'],\

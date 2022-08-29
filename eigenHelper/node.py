@@ -3,6 +3,7 @@ Node module with helper function and classes
 """
 from bokeh.models import Div, NumericInput, Button
 from utils import *
+from element import activateElementModule, deactivateElementModule
 
 class Node():
     def __init__(self,x,y,id):
@@ -91,27 +92,30 @@ def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS, debugI
     updateNodeText(dtext, nodeset, debugInfo)
     dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
-def delNodeOnClick(nodeset, nidWidget, delNodeWidget, dtext, nodeCDS, debugInfo):
-    if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)):
+def delNodeOnClick(nodeset, elModule, nidWidget, delNodeWidget, dtext, nodeCDS, debugInfo):
+    if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)[0]):
         return
     nodeset.deleteEntityWithID(delNodeWidget.value)
     delNodeWidget.value = 0
     nidWidget.value = nodeset.getNextID()
     updateCoordData(nodeset, nodeCDS)
     updateNodeText(dtext, nodeset, debugInfo)
+    deactivateElementModule(elModule)
     dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
-def delAllNodesOnClick(nodeset, nidWidget, dtext, nodeCDS, debugInfo):
+def delAllNodesOnClick(nodeset, elModule, nidWidget, dtext, nodeCDS, debugInfo):
     nodeset.clear()
     nidWidget.value = nodeset.getNextID()
     updateCoordData(nodeset, nodeCDS)
     updateNodeText(dtext, nodeset, debugInfo)
+    deactivateElementModule(elModule)
     dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
 
-def assignDOFsOnClick(nodeset, dtext, debugInfo):
+def assignDOFsOnClick(nodeset, elModule, dtext, debugInfo):
     if nodeset.members:
         nodeset.assignDOFs()
         updateNodeText(dtext, nodeset, debugInfo)
+        activateElementModule(elModule)
         dtext.text += '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
 
 
