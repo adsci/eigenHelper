@@ -4,6 +4,7 @@ from functools import partial
 from utils import *
 from node import *
 from element import *
+from bc import *
 from plot import *
 
 def modify_doc(doc, debug=False):
@@ -13,6 +14,9 @@ def modify_doc(doc, debug=False):
 
     #Create Element module
     edic = createElementLayout(debug)
+
+    #Create Boundary Conditions module
+    bcdic = createBCLayout(debug)
 
     #Create Plot module
     p, ncds, ecds = createPlotLayout(ndic['nset'], edic['eset'])
@@ -36,6 +40,8 @@ def modify_doc(doc, debug=False):
     edic['delAllElemButton'].on_click(partial(delAllElemOnClick, elemset=edic['eset'], eidWidget=edic['eIDWidget'],\
          dtext=edic['divElements'], elemCDS=ecds, debugInfo=debug))
 
+    bcdic['rbg'].on_click(partial(changeActiveBC, rbgDiv=bcdic['rbgDiv']))
+
     """
     Layout
     """
@@ -47,8 +53,9 @@ def modify_doc(doc, debug=False):
                     column(edic['eIDWidget'], Spacer(width=100,height=edic['eIDWidget'].height+10), edic['delElNumWidget'], \
                          edic['delElemButton'], edic['delAllElemButton']), \
                              Spacer(width=25), edic['divElements'])
+    bcLayout = column(bcdic['rbg'], bcdic['rbgDiv'])
 
-    layout = row(column(nodeLayout, elemLayout), p)
+    layout = row(column(nodeLayout, elemLayout, bcLayout), p)
     doc.add_root(layout)
     doc.title = "eigenHelper"
 
