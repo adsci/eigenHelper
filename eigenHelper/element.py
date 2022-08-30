@@ -1,5 +1,6 @@
 from bokeh.models import Div, NumericInput, Button
 from utils import *
+from bc import activateBCModule, deactivateBCModule
 import calfem.core as cfc
 
 class Element():
@@ -49,6 +50,11 @@ class Element():
 
 
 class ElementSet(EntitySet):
+    def __init__(self):
+        EntitySet.__init__(self)
+        self.K = []
+        self.M = []
+
     def foundNodes(self,n1,n2):
         for elem in self.members:
             if ((elem.na is n1) and (elem.nb is n2)) or ((elem.na is n2) and (elem.nb is n1)):
@@ -63,6 +69,9 @@ class ElementSet(EntitySet):
             ex.append(iex)
             ey.append(iey)
         return ex, ey
+
+    def assemble(self):
+        print(self.K, self.M)
 
 
 def createElement(elset, nset, id, na, nb, elprop):
@@ -81,56 +90,70 @@ def updateElementData(elemset, elemCDS):
     ex, ey = elemset.getExEy()
     elemCDS.data = {'x':ex, 'y':ey}
 
-def updateElementText(divText, elemset, debugInfo):
-    divText.text = "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
+def updateElementText(divText, elemset, readyFlag, debugInfo):
+    newText = ['<b>Elements</b>:<br>']
+    newText += elemset.printInfo(debugInfo)
+    if not readyFlag:
+        newText.append('<br><p style="color:red"><b>Click Continue when node input ready</b></p>')
+    else:
+        newText.append('<br><p style="color:green"><b>Ready for boundary condition input</b></p>')
+    divText.text = ''.join(newText)
 
-def activateElementModule(edict):
-    for key, val in edict.items():
+def activateElementModule(elModule):
+    for key, val in elModule.items():
         val.disabled = False
+    elModule['divElements'].text += '<p style="color:red"><b>Click Continue when element input ready</b></p>'
 
-def deactivateElementModule(edict):
-    for key, val in edict.items():
+def deactivateElementModule(elModule):
+    for key, val in elModule.items():
         val.disabled = True
-    edict['divElements'].disabled = False
+    elModule['divElements'].disabled = False
 
 """
 Element module callbacks
 """
-def addElemOnClick(nodeset, elemset, eidWidget, naWidget, nbWidget, youngWidget, densityWidget, areaWidget, inertiaWidget,\
-     dtext, elemCDS, debugInfo):
-    if eidWidget.value <= 0:
+def addElemOnClick(nModule, elModule, elemCDS, debugInfo):
+    if elModule['eIDWidget'].value <= 0:
         return
     #check whether the element can be added
-    na = nodeset.getEntityWithID(naWidget.value)
-    nb = nodeset.getEntityWithID(nbWidget.value)
+    na = nModule['nset'].getEntityWithID(elModule['enaWidget'].value)
+    nb = nModule['nset'].getEntityWithID(elModule['enbWidget'].value)
     if not (na and nb):
         return
-    nElement = createElement(elemset, nodeset, eidWidget.value, na, \
-        nb, {'E':youngWidget.value, 'rho':densityWidget.value, 'A':areaWidget.value, 'I':inertiaWidget.value})
+    nElement = createElement(elModule['eset'], nModule['nset'], elModule['eIDWidget'].value, na, \
+        nb, {'E':elModule['eYoungWidget'].value, 'rho':elModule['eDensityWidget'].value, 'A':elModule['eAreaWidget'].value, 'I':elModule['eInertiaWidget'].value})
     if not nElement:
         return
-    elemset.add(nElement)
-    eidWidget.value = elemset.getNextID()
-    updateElementData(elemset,elemCDS)
-    updateElementText(dtext, elemset, debugInfo)
-    # dtext.text= "<b>Elements</b>:<br>" + elemset.printInfo(debugInfo)
+    elModule['eset'].add(nElement)
+    elModule['eIDWidget'].value = elModule['eset'].getNextID()
+    updateElementData(elModule['eset'],elemCDS)
+    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
 
-def delElemOnClick(elemset, eidWidget, delElWidget, dtext, elemCDS, debugInfo):
-    if (not elemset.members) or (not elemset.foundID(delElWidget.value)[0]):
+def delElemOnClick(elModule, bcModule, elemCDS, debugInfo):
+    if (not elModule['eset'].members) or (not elModule['eset'].foundID(elModule['delElNumWidget'].value)[0]):
         return
-    elemset.deleteEntityWithID(delElWidget.value)
-    delElWidget.value = 0
-    eidWidget.value = elemset.getNextID()
-    updateElementData(elemset, elemCDS)
-    updateElementText(dtext, elemset, debugInfo)
-    # dtext.text=elemset.printInfo(debugInfo)
+    elModule['eset'].deleteEntityWithID(elModule['delElNumWidget'].value)
+    elModule['delElNumWidget'].value = 0
+    elModule['eIDWidget'].value = elModule['eset'].getNextID()
+    updateElementData(elModule['eset'], elemCDS)
+    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+    deactivateBCModule(bcModule)
+    elModule['assembleButton'].disabled = False
 
-def delAllElemOnClick(elemset, eidWidget, dtext, elemCDS, debugInfo):
-    elemset.clear()
-    eidWidget.value = elemset.getNextID()
-    updateElementData(elemset, elemCDS)
-    updateElementText(dtext, elemset, debugInfo)
+def delAllElemOnClick(elModule, bcModule, elemCDS, debugInfo):
+    elModule['eset'].clear()
+    elModule['eIDWidget'].value = elModule['eset'].getNextID()
+    updateElementData(elModule['eset'], elemCDS)
+    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+    deactivateBCModule(bcModule)
+    elModule['assembleButton'].disabled = False
 
+def assembleOnClick(elModule, bcModule, debugInfo):
+    if elModule['eset'].members:
+        elModule['eset'].assemble()
+        updateElementText(elModule['divElements'], elModule['eset'], True, debugInfo)
+        activateBCModule(bcModule)
+        elModule['assembleButton'].disabled = True
 
 """
 Element module layout
@@ -148,10 +171,11 @@ def createElementLayout(debug=False):
     addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
     delElemButton = Button(label="Delete Element", button_type="warning", width=120, disabled=True )
     delAllElemButton = Button(label="Delete All Elements", button_type="danger", width=120, disabled=True )
+    assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
         'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
-        'delAllElemButton':delAllElemButton, 'divElements':divElements}
+        'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements}
     return elemLayoutDict

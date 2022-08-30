@@ -8,9 +8,9 @@ class EntitySet():
         self.members=[]
 
     def printInfo(self, debug=False):
-        desc = ''
+        desc = []
         for member in self.members:
-            desc += member.printInfo(debug) + "<br>"
+            desc.append(member.printInfo(debug) + "<br>")
         return desc
 
     def clear(self):

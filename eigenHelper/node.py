@@ -72,51 +72,55 @@ def updateCoordData(nodeset, nodeCDS):
     ex, ey, ids = nodeset.getExEy()
     nodeCDS.data = {'x':ex, 'y':ey, 'IDs':ids}
 
-def updateNodeText(divText, nodeset, debugInfo):
-    divText.text = "<b>Nodes</b>:<br>"  + nodeset.printInfo(debugInfo)
-
+def updateNodeText(divText, nodeset, readyFlag, debugInfo):
+    newText = ['<b>Nodes</b>:<br>']
+    newText += nodeset.printInfo(debugInfo)
+    if not readyFlag:
+        newText.append('<br><p style="color:red"><b>Click Continue when node input ready</b></p>')
+    else:
+        newText.append('<br><p style="color:green"><b>Ready for element input</b></p>')
+    divText.text = ''.join(newText)
 
 """
 Node module callbacks
 """
-def addNodeOnClick(nodeset, nxWidget, nyWidget, nidInput, dtext, nodeCDS, debugInfo):
-    if nidInput.value <= 0:
+def addNodeOnClick(nModule, nodeCDS, debugInfo):
+    if nModule['nIDWidget'].value <= 0:
         return
     #check whether the node can be added
-    nNode = createNode(nodeset, float(nxWidget.value), float(nyWidget.value), nidInput.value)
+    nNode = createNode(nModule['nset'], float(nModule['nXWidget'].value), float(nModule['nYWidget'].value), nModule['nIDWidget'].value)
     if not nNode:
         return
-    nodeset.add(nNode)
-    nidInput.value = nodeset.getNextID()
-    updateCoordData(nodeset, nodeCDS)
-    updateNodeText(dtext, nodeset, debugInfo)
-    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+    nModule['nset'].add(nNode)
+    nModule['nIDWidget'].value = nModule['nset'].getNextID()
+    updateCoordData(nModule['nset'], nodeCDS)
+    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
 
-def delNodeOnClick(nodeset, elModule, nidWidget, delNodeWidget, dtext, nodeCDS, debugInfo):
-    if (not nodeset.members) or (not nodeset.foundID(delNodeWidget.value)[0]):
+def delNodeOnClick(nModule, elModule, nodeCDS, debugInfo):
+    if (not nModule['nset'].members) or (not nModule['nset'].foundID(nModule['delNodeNumWidget'].value)[0]):
         return
-    nodeset.deleteEntityWithID(delNodeWidget.value)
-    delNodeWidget.value = 0
-    nidWidget.value = nodeset.getNextID()
-    updateCoordData(nodeset, nodeCDS)
-    updateNodeText(dtext, nodeset, debugInfo)
+    nModule['nset'].deleteEntityWithID(nModule['delNodeNumWidget'].value)
+    nModule['delNodeNumWidget'].value = 0
+    nModule['nIDWidget'].value = nModule['nset'].getNextID()
+    updateCoordData(nModule['nset'], nodeCDS)
+    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     deactivateElementModule(elModule)
-    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+    nModule['assignDOFsButton'].disabled = False
 
-def delAllNodesOnClick(nodeset, elModule, nidWidget, dtext, nodeCDS, debugInfo):
-    nodeset.clear()
-    nidWidget.value = nodeset.getNextID()
-    updateCoordData(nodeset, nodeCDS)
-    updateNodeText(dtext, nodeset, debugInfo)
+def delAllNodesOnClick(nModule, elModule, nodeCDS, debugInfo):
+    nModule['nset'].clear()
+    nModule['nIDWidget'].value = nModule['nset'].getNextID()
+    updateCoordData(nModule['nset'], nodeCDS)
+    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     deactivateElementModule(elModule)
-    dtext.text += '<br><p style="color:red"><b>Assign DOFs when node input ready</b></p>'
+    nModule['assignDOFsButton'].disabled = False
 
-def assignDOFsOnClick(nodeset, elModule, dtext, debugInfo):
-    if nodeset.members:
-        nodeset.assignDOFs()
-        updateNodeText(dtext, nodeset, debugInfo)
+def assignDOFsOnClick(nModule, elModule, debugInfo):
+    if nModule['nset'].getSize() >= 2:
+        nModule['nset'].assignDOFs()
+        updateNodeText(nModule['divNodes'], nModule['nset'], True, debugInfo)
         activateElementModule(elModule)
-        dtext.text += '<br><p style="color:green"><b>DOFs assigned, ready for element input</b></p>'
+        nModule['assignDOFsButton'].disabled = True
 
 
 """
@@ -130,9 +134,9 @@ def createNodeLayout(debug=False):
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
     addNodeButton = Button(label="Add Node", button_type="primary", width=50 )
     delNodeButton = Button(label="Delete Node", button_type="warning", width=50 )
-    assignDOFsButton = Button(label="Assign DOFs", button_type="success", width=50 )
+    assignDOFsButton = Button(label="Continue", button_type="success", width=50 )
     delAllNodesButton = Button(label="Delete All Nodes", button_type="danger", width=100 )
-    divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Assign DOFs when node input ready</b></p>', width=250, height=300)
+    divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', width=250, height=300)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
