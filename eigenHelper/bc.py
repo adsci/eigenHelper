@@ -1,4 +1,4 @@
-from bokeh.models import Div, RadioButtonGroup
+from bokeh.models import Div, RadioButtonGroup, NumericInput, Button
 from utils import *
 
 def activateSupportImg(choice):
@@ -19,12 +19,12 @@ def deactivateSupportImg():
     return newText
 
 def activateBCModule(bcdict):
-    for key, val in bcdict.items():
+    for _, val in bcdict.items():
         val.disabled = False
     bcdict['rbgDiv'].text = activateSupportImg(0)
 
 def deactivateBCModule(bcdict):
-    for key, val in bcdict.items():
+    for _, val in bcdict.items():
         val.disabled = True
     bcdict['rbgDiv'].text = deactivateSupportImg()
 
@@ -40,7 +40,14 @@ Boundary Conditions module layout
 def createBCLayout(debug=False):
 
     rbg = RadioButtonGroup(labels=['S1', 'S2', 'S3', 'S4', 'S5', 'S6'], active=0, disabled=True)
+    addToNodeWidget = NumericInput(value=0, title="Add support at node:",mode='int', width=50,height=50, disabled=True)
+    addSupportButton = Button(label="Add Support", button_type="primary", width=50, disabled=True)
+    deleteFromNodeWidget = NumericInput(value=0, title="Remove support at node:",mode='int', width=50,height=50, disabled=True)
+    deleteSupportButton = Button(label="Remove Support", button_type="warning", width=50, disabled=True)
+    deleteAllSupportsButton = Button(label="Remove All Supports", button_type="danger", width=50, disabled=True)
     rbgText = deactivateSupportImg()
-    rbgDiv = Div(text=rbgText, width=400)
-    bcLayoutDict = {'rbg':rbg, 'rbgDiv':rbgDiv}
+    rbgDiv = Div(text=rbgText, width=400, height=50)
+    bcLayoutDict = {'rbg':rbg, 'addToNodeWidget':addToNodeWidget, 'addSupportButton':addSupportButton, \
+        'deleteFromNodeWidget':deleteFromNodeWidget, 'deleteSupportButton':deleteSupportButton, \
+        'deleteAllSupportsButton':deleteAllSupportsButton, 'rbgDiv':rbgDiv}
     return bcLayoutDict

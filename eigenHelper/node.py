@@ -133,9 +133,9 @@ def createNodeLayout(debug=False):
     nYWidget = NumericInput(value=0, title="y [m]:",mode='float', width=75)
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
     addNodeButton = Button(label="Add Node", button_type="primary", width=50 )
-    delNodeButton = Button(label="Delete Node", button_type="warning", width=50 )
+    delNodeButton = Button(label="Remove Node", button_type="warning", width=50 )
     assignDOFsButton = Button(label="Continue", button_type="success", width=50 )
-    delAllNodesButton = Button(label="Delete All Nodes", button_type="danger", width=100 )
+    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=100 )
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', width=250, height=300)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \

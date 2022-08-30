@@ -119,12 +119,12 @@ def updateElementText(divText, elemset, readyFlag, debugInfo):
     divText.text = ''.join(newText)
 
 def activateElementModule(elModule):
-    for key, val in elModule.items():
+    for _, val in elModule.items():
         val.disabled = False
     elModule['divElements'].text += '<p style="color:red"><b>Click Continue when element input ready</b></p>'
 
 def deactivateElementModule(elModule):
-    for key, val in elModule.items():
+    for _, val in elModule.items():
         val.disabled = True
     elModule['divElements'].disabled = False
 
@@ -189,8 +189,8 @@ def createElementLayout(debug=False):
     eInertiaWidget = NumericInput(value=0.0171e-4, title="I [m^4]:",mode='float', width=100,height=50, disabled=True)
     delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50, disabled=True)
     addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
-    delElemButton = Button(label="Delete Element", button_type="warning", width=120, disabled=True )
-    delAllElemButton = Button(label="Delete All Elements", button_type="danger", width=120, disabled=True )
+    delElemButton = Button(label="Remove Element", button_type="warning", width=120, disabled=True )
+    delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
     assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 

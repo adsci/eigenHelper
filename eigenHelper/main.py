@@ -48,7 +48,8 @@ def modify_doc(doc, debug=False):
                     column(edic['eIDWidget'], Spacer(width=100,height=17), edic['assembleButton'], edic['delElNumWidget'], \
                          edic['delElemButton'], edic['delAllElemButton']), \
                              Spacer(width=75), edic['divElements'])
-    bcLayout = column(bcdic['rbg'], bcdic['rbgDiv'])
+    bcLayout = column(bcdic['rbg'], bcdic['rbgDiv'], row(column(bcdic['addToNodeWidget'], bcdic['addSupportButton']), Spacer(width=150),\
+        column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) ))
 
     layout = row(column(nodeLayout, elemLayout, bcLayout), p)
     doc.add_root(layout)
