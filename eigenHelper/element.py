@@ -10,7 +10,7 @@ class Element():
         self.nb = nodeB
         self.edof = np.concatenate((self.na.getDOFs(),self.nb.getDOFs()))
         self.properties = prop
-        self.computeMatrices()
+        self.Ke, self.Me = self.computeMatrices()
 
     def getExEy(self):
         ex = np.array([self.na.getX(), self.nb.getX()])
@@ -29,11 +29,18 @@ class Element():
     def getID(self):
         return self.id
 
+    def getElementStiffnessMatrix(self):
+        return self.Ke
+
+    def getElementMassMatrix(self):
+        return self.Me
+
     def computeMatrices(self):
         ex, ey = self.getExEy()
         props = self.getProp()
         ep = [props['E'], props['A'], props['I'], props['rho']*props['A']]
-        self.Ke, self.Me = cfc.beam2d(ex, ey, ep)
+        Ke, Me = cfc.beam2d(ex, ey, ep)
+        return Ke, Me
 
     def printInfo(self, debug=False):
         if debug:
@@ -54,6 +61,7 @@ class ElementSet(EntitySet):
         EntitySet.__init__(self)
         self.K = []
         self.M = []
+        self.ndof = 0
 
     def foundNodes(self,n1,n2):
         for elem in self.members:
@@ -70,8 +78,19 @@ class ElementSet(EntitySet):
             ey.append(iey)
         return ex, ey
 
+    def getStiffnessMatrix(self):
+        return self.K
+
+    def getMassMatrix(self):
+        return self.M
+
     def assemble(self):
-        print(self.K, self.M)
+        self.K = np.zeros((self.ndof, self.ndof))
+        self.M = np.zeros((self.ndof, self.ndof))
+        for elem in self.members:
+            cfc.assem(elem.getEdof(), self.getStiffnessMatrix(), elem.getElementStiffnessMatrix())
+            cfc.assem(elem.getEdof(), self.getMassMatrix(), elem.getElementMassMatrix())
+
 
 
 def createElement(elset, nset, id, na, nb, elprop):
@@ -125,6 +144,7 @@ def addElemOnClick(nModule, elModule, elemCDS, debugInfo):
     if not nElement:
         return
     elModule['eset'].add(nElement)
+    elModule['eset'].ndof = np.max(nElement.getEdof())
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'],elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
@@ -163,10 +183,10 @@ def createElementLayout(debug=False):
     eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50, disabled=True)
     enaWidget = NumericInput(value=0, title="Node A:",mode='int', width=50,height=50, disabled=True)
     enbWidget = NumericInput(value=0, title="Node B:",mode='int', width=50, disabled=True)
-    eYoungWidget = NumericInput(value=1, title="E [Pa]",mode='int', width=100,height=50, disabled=True)
-    eDensityWidget = NumericInput(value=1, title="rho [kg/m^3]:",mode='int', width=100,height=50, disabled=True)
-    eAreaWidget = NumericInput(value=1, title="A [m^2]:",mode='int', width=100,height=50, disabled=True)
-    eInertiaWidget = NumericInput(value=1, title="I [m^4]:",mode='int', width=100,height=50, disabled=True)
+    eYoungWidget = NumericInput(value=3e10, title="E [Pa]",mode='float', width=100,height=50, disabled=True)
+    eDensityWidget = NumericInput(value=2500, title="rho [kg/m^3]:",mode='float', width=100,height=50, disabled=True)
+    eAreaWidget = NumericInput(value=0.1030e-2, title="A [m^2]:",mode='float', width=100,height=50, disabled=True)
+    eInertiaWidget = NumericInput(value=0.0171e-4, title="I [m^4]:",mode='float', width=100,height=50, disabled=True)
     delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50, disabled=True)
     addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
     delElemButton = Button(label="Delete Element", button_type="warning", width=120, disabled=True )
