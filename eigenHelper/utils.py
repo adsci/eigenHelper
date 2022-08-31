@@ -1,4 +1,5 @@
 import numpy as np
+import calfem.core as cfc
 
 np.set_printoptions(precision=3)
 

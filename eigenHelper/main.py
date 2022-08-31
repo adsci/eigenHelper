@@ -45,7 +45,7 @@ def modify_doc(doc, debug=False):
     bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
 
     soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic))
-    soldic['solveButton'].on_click(solveOnClick)
+    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic))
 
     """
     Layout

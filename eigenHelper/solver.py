@@ -22,7 +22,7 @@ def checkStiffnessSingularity(elset, supset):
     dofs = np.unique(eldofs)
     bc = supset.gatherConstraints()
     free = np.setdiff1d(dofs, bc) - 1
-    Kfree = elset.K[np.ix_(free,free)]
+    Kfree = elset.getStiffnessMatrix()[np.ix_(free,free)]
     kRank = np.linalg.matrix_rank(Kfree)
     if kRank < min(Kfree.shape):
         return False
@@ -58,9 +58,14 @@ def checkModelOnClick(nModule, elModule, bcModule, solModule):
     return True
 
 
-def solveOnClick():
-    #call calfem solve
-    pass
+def solveOnClick(elModule, bcModule, solModule):
+    K = elModule['eset'].getStiffnessMatrix()
+    M = elModule['eset'].getMassMatrix()
+    bc = bcModule['sset'].gatherConstraints()
+    evals, evecs = cfc.eigen(K,M,bc)
+    solModule['eigenvalues'] = evals
+    solModule['eigenvectors'] = evecs
+    printMessage(f"Success <br> eigenvalues = {evals}", "green", solModule['divSolver'])
 
 """
 Solver module layout
