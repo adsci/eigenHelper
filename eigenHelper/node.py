@@ -84,7 +84,7 @@ def updateNodeText(divText, nodeset, readyFlag, debugInfo):
 """
 Node module callbacks
 """
-def addNodeOnClick(nModule, nodeCDS, debugInfo):
+def addNodeOnClick(nModule, solModule, nodeCDS, debugInfo):
     if nModule['nIDWidget'].value <= 0:
         return
     #check whether the node can be added
@@ -95,8 +95,10 @@ def addNodeOnClick(nModule, nodeCDS, debugInfo):
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+    nModule['assignDOFsButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def delNodeOnClick(nModule, elModule, nodeCDS, debugInfo):
+def delNodeOnClick(nModule, elModule, solModule, nodeCDS, debugInfo):
     if (not nModule['nset'].members) or (not nModule['nset'].foundID(nModule['delNodeNumWidget'].value)[0]):
         return
     nModule['nset'].deleteEntityWithID(nModule['delNodeNumWidget'].value)
@@ -106,21 +108,24 @@ def delNodeOnClick(nModule, elModule, nodeCDS, debugInfo):
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     deactivateElementModule(elModule)
     nModule['assignDOFsButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def delAllNodesOnClick(nModule, elModule, nodeCDS, debugInfo):
+def delAllNodesOnClick(nModule, elModule, solModule, nodeCDS, debugInfo):
     nModule['nset'].clear()
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     deactivateElementModule(elModule)
     nModule['assignDOFsButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def assignDOFsOnClick(nModule, elModule, debugInfo):
+def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
     if nModule['nset'].getSize() >= 2:
         nModule['nset'].assignDOFs()
         updateNodeText(nModule['divNodes'], nModule['nset'], True, debugInfo)
-        activateElementModule(elModule)
+        activateElementModule(elModule, debugInfo)
         nModule['assignDOFsButton'].disabled = True
+        solModule['solveButton'].disabled = True
 
 
 """

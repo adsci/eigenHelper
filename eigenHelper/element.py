@@ -118,10 +118,10 @@ def updateElementText(divText, elemset, readyFlag, debugInfo):
         newText.append('<br><p style="color:green"><b>Ready for boundary condition input</b></p>')
     divText.text = ''.join(newText)
 
-def activateElementModule(elModule):
+def activateElementModule(elModule, debugInfo):
     for _, val in elModule.items():
         val.disabled = False
-    elModule['divElements'].text += '<p style="color:red"><b>Click Continue when element input ready</b></p>'
+    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
 
 def deactivateElementModule(elModule):
     for _, val in elModule.items():
@@ -131,7 +131,7 @@ def deactivateElementModule(elModule):
 """
 Element module callbacks
 """
-def addElemOnClick(nModule, elModule, elemCDS, debugInfo):
+def addElemOnClick(nModule, elModule, solModule, elemCDS, debugInfo):
     if elModule['eIDWidget'].value <= 0:
         return
     #check whether the element can be added
@@ -148,8 +148,10 @@ def addElemOnClick(nModule, elModule, elemCDS, debugInfo):
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'],elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+    elModule['assembleButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def delElemOnClick(elModule, bcModule, elemCDS, debugInfo):
+def delElemOnClick(elModule, bcModule, solModule, elemCDS, debugInfo):
     if (not elModule['eset'].members) or (not elModule['eset'].foundID(elModule['delElNumWidget'].value)[0]):
         return
     elModule['eset'].deleteEntityWithID(elModule['delElNumWidget'].value)
@@ -159,21 +161,24 @@ def delElemOnClick(elModule, bcModule, elemCDS, debugInfo):
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
     deactivateBCModule(bcModule)
     elModule['assembleButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def delAllElemOnClick(elModule, bcModule, elemCDS, debugInfo):
+def delAllElemOnClick(elModule, bcModule, solModule, elemCDS, debugInfo):
     elModule['eset'].clear()
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'], elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
     deactivateBCModule(bcModule)
     elModule['assembleButton'].disabled = False
+    solModule['solveButton'].disabled = True
 
-def assembleOnClick(elModule, bcModule, debugInfo):
+def assembleOnClick(elModule, bcModule, solModule, debugInfo):
     if elModule['eset'].members:
         elModule['eset'].assemble()
         updateElementText(elModule['divElements'], elModule['eset'], True, debugInfo)
         activateBCModule(bcModule)
         elModule['assembleButton'].disabled = True
+        solModule['solveButton'].disabled = True
 
 """
 Element module layout

@@ -20,7 +20,7 @@ class Support():
             return "Support " +str(self.getType()) + " at Node " + str(self.getNode().getID())
 
     def getConstrainedDOFs(self):
-        locked = [ [1,2,3], [2,3], [1,3], [1,2], [2], [1]]
+        locked = [ [0,1,2], [1,2], [0,2], [0,1], [1], [0]]
         return locked[self.type]
 
     def typeToMarker(self, typeName):
@@ -58,6 +58,12 @@ class SupportSet(EntitySet):
             typelist.append(support.getType())
             markertypes.append(support.typeToMarker(support.getType()))
         return (np.array(xlist), np.array(ylist), typelist, markertypes)
+
+    def gatherConstraints(self):
+        constraints = np.array([], dtype=np.intc)
+        for support in self.members:
+            constraints = np.concatenate( (constraints, support.getNode().getDOFs()[np.ix_(support.getConstrainedDOFs())]) )
+        return constraints
 
 def createSupport(nset, type, node):
     fnd, _ = nset.foundID(node.getID())
@@ -101,7 +107,7 @@ def updateSupportText(divText, supset, readyFlag, debugInfo):
     newText = ['<b>Supports</b>:<br>']
     newText += supset.printInfo(debugInfo)
     if not readyFlag:
-        newText.append('<br><p style="color:red"><b>Click Check when support input ready</b></p>')
+        newText.append('<br><p style="color:red"><b>Click Check Model when support input ready</b></p>')
     else:
         newText.append('<br><p style="color:green"><b>Ready for check</b></p>')
     divText.text = ''.join(newText)
@@ -113,7 +119,7 @@ Boundary Conditions module callbacks
 def changeActiveBC(newChoice, bcModule):
     bcModule['rbgDiv'].text = activateSupportImg(newChoice)
 
-def addSupportOnClick(nModule, bcModule, ssetCDS, debugInfo):
+def addSupportOnClick(nModule, bcModule, solModule, ssetCDS, debugInfo):
     if not nModule['nset'].foundID(bcModule['addToNodeWidget'].value)[0]:
         return
     # #check whether the support can be added
@@ -127,8 +133,9 @@ def addSupportOnClick(nModule, bcModule, ssetCDS, debugInfo):
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    solModule['solveButton'].disabled = True
 
-def delSupportOnClick(bcModule, ssetCDS, debugInfo):
+def delSupportOnClick(bcModule, solModule, ssetCDS, debugInfo):
     if (not bcModule['sset'].members) or (not bcModule['sset'].foundAtNode(bcModule['deleteFromNodeWidget'].value)[0]):
         return
     bcModule['sset'].deleteAtNode(bcModule['deleteFromNodeWidget'].value)
@@ -136,12 +143,14 @@ def delSupportOnClick(bcModule, ssetCDS, debugInfo):
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    solModule['solveButton'].disabled = True
 
-def delAllSupportsOnClick(bcModule, ssetCDS, debugInfo):
+def delAllSupportsOnClick(bcModule, solModule, ssetCDS, debugInfo):
     bcModule['sset'].clear()
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    solModule['solveButton'].disabled = True
 
 
 """
