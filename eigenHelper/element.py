@@ -46,10 +46,10 @@ class Element():
         if debug:
             info = f"Element {self.getID()} with nodes {str(self.getNodes())}\n"
             info += f"with edof = {self.getEdof()}\n"
-            info += f"Properties: E={self.getProp()['E']} Pa, rho={self.getProp()['rho']} kg/m3, A={self.getProp()['A']} m2, I={self.getProp()['I']} m4 \n"
-            info += f"Stiffness matrix: \n{self.Ke} \n"
-            info += f"Mass matrix: \n{self.Me} \n"
-            info += "<br>"
+            # info += f"Properties: E={self.getProp()['E']} Pa, rho={self.getProp()['rho']} kg/m3, A={self.getProp()['A']} m2, I={self.getProp()['I']} m4 \n"
+            # info += f"Stiffness matrix: \n{self.Ke} \n"
+            # info += f"Mass matrix: \n{self.Me} \n"
+            # info += "<br>"
             return info
         else:
             info = f"Element {self.getID()} with nodes {str(self.getNodes())}\n"
@@ -181,8 +181,8 @@ Element module layout
 def createElementLayout(debug=False):
     eset = ElementSet()
     eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50, disabled=True)
-    enaWidget = NumericInput(value=0, title="Node A:",mode='int', width=50,height=50, disabled=True)
-    enbWidget = NumericInput(value=0, title="Node B:",mode='int', width=50, disabled=True)
+    enaWidget = NumericInput(value=1, title="Node A:",mode='int', width=50,height=50, disabled=True)
+    enbWidget = NumericInput(value=2, title="Node B:",mode='int', width=50, disabled=True)
     eYoungWidget = NumericInput(value=3e10, title="E [Pa]",mode='float', width=100,height=50, disabled=True)
     eDensityWidget = NumericInput(value=2500, title="rho [kg/m^3]:",mode='float', width=100,height=50, disabled=True)
     eAreaWidget = NumericInput(value=0.1030e-2, title="A [m^2]:",mode='float', width=100,height=50, disabled=True)
