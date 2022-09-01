@@ -23,16 +23,27 @@ class Support():
         locked = [ [0,1,2], [1,2], [0,2], [0,1], [1], [0]]
         return locked[self.type]
 
-    def typeToMarker(self, typeName):
+    def getImageSize(self, width):
+        #returns a tuple (width, height)
+        typeName = self.getType()
         if typeName == 'S1':
-            return 'square'
-        elif typeName == 'S2' or typeName == 'S3':
-            return 'square_pin'
+            return (width, 0.29795*width)
+        elif typeName == 'S2':
+            return (width, 0.4589*width)
+        elif typeName == 'S3':
+            return (0.458904*width, width)
         elif typeName == 'S4':
-            return 'triangle'
-        elif typeName == 'S5' or typeName == 'S6':
-            return 'triangle_pin'
-        return 'hex'
+            return (width, 0.702055*width)
+        elif typeName == 'S5':
+            return (width, 0.863014*width)
+        elif typeName == 'S6':
+            return (0.863014*width, width)
+        return (width, width)
+
+    def getImageURL(self):
+        typeName = self.getType()
+        return f"eigenHelper/static/{typeName.lower()}_marker.png"
+
 
 
 class SupportSet(EntitySet):
@@ -47,17 +58,33 @@ class SupportSet(EntitySet):
         if fnd:
             del self.members[ind]
 
-    def getExEy(self):
+    def getExEy(self, horizontal=False):
+        w_base = 50 #width of the support marker in screen units
         xlist = []
         ylist = []
-        typelist = []
-        markertypes = []
-        for support in self.members:
-            xlist.append(support.getNode().getX())
-            ylist.append(support.getNode().getY())
-            typelist.append(support.getType())
-            markertypes.append(support.typeToMarker(support.getType()))
-        return (np.array(xlist), np.array(ylist), typelist, markertypes)
+        wlist = []
+        hlist = []
+        urls = []
+        if horizontal:
+            for support in self.members:
+                if support.getType() in ['S3', 'S6']:
+                    xlist.append(support.getNode().getX())
+                    ylist.append(support.getNode().getY())
+                    w,h = support.getImageSize(w_base)
+                    wlist.append(w)
+                    hlist.append(h)
+                    urls.append(support.getImageURL())
+            return (np.array(xlist), np.array(ylist), np.array(wlist), np.array(hlist), urls)
+        else:
+            for support in self.members:
+                if support.getType() not in ['S3', 'S6']:
+                    xlist.append(support.getNode().getX())
+                    ylist.append(support.getNode().getY())
+                    w,h = support.getImageSize(w_base)
+                    wlist.append(w)
+                    hlist.append(h)
+                    urls.append(support.getImageURL())
+            return (np.array(xlist), np.array(ylist), np.array(wlist), np.array(hlist), urls)
 
     def gatherConstraints(self):
         constraints = np.array([], dtype=np.intc)
@@ -77,16 +104,16 @@ def activateSupportImg(choice):
     newText = '&nbsp &nbsp'
     for i in range(6):
         if i == choice:
-            newText += f'<img src="/eigenHelper/static/support{i}.png"> {padding[i]}'
+            newText += f'<img src="/eigenHelper/static/s{i+1}.png"> {padding[i]}'
         else:
-            newText += f'<img src="/eigenHelper/static/support{i}.png" style="opacity:0.4;filter:alpha(opacity=40);"> {padding[i]}'
+            newText += f'<img src="/eigenHelper/static/s{i+1}.png" style="opacity:0.4;filter:alpha(opacity=40);"> {padding[i]}'
     return newText
 
 def deactivateSupportImg():
     padding = ['&emsp;', '&emsp;', '&emsp; &nbsp', '&emsp;', '&emsp;', '&emsp;']
     newText = '&nbsp &nbsp'
     for i in range(6):
-        newText += f'<img src="/eigenHelper/static/support{i}.png" style="opacity:0.4;filter:alpha(opacity=40);"> {padding[i]}'
+        newText += f'<img src="/eigenHelper/static/s{i+1}.png" style="opacity:0.4;filter:alpha(opacity=40);"> {padding[i]}'
     return newText
 
 def activateBCModule(bcModule):
@@ -100,8 +127,10 @@ def deactivateBCModule(bcModule):
     bcModule['rbgDiv'].text = deactivateSupportImg()
 
 def updateSupportData(supportSet, ssetCDS):
-    ex, ey, ids, markers = supportSet.getExEy()
-    ssetCDS.data = {'x':ex, 'y':ey, 'types':ids, 'mtype':markers}
+    ex, ey, w, h, urls = supportSet.getExEy(horizontal=False)
+    ssetCDS[0].data = {'x':ex, 'y':ey, 'w':w, 'h':h, 'urls':urls}
+    ex, ey, w, h, urls = supportSet.getExEy(horizontal=True)
+    ssetCDS[1].data = {'x':ex, 'y':ey, 'w':w, 'h':h, 'urls':urls}
 
 def updateSupportText(divText, supset, readyFlag, debugInfo):
     newText = ['<b>Supports</b>:<br>']

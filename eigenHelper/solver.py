@@ -5,6 +5,9 @@ def printMessage(message, color, divSol):
     divSol.text = f'<br><p style="color:{color}"><b>{message}</b></p>'
 
 def checkDanglingNodes(nset, elset):
+    """
+    Returns True if there are no dangling nodes, False otherwise
+    """
     ndofs = []
     for node in nset.members:
         ndofs.append(node.getDOFs())
@@ -16,6 +19,9 @@ def checkDanglingNodes(nset, elset):
     return np.array_equal(n_unique, e_unique)
 
 def checkStiffnessSingularity(elset, supset):
+    """
+    Returns True if the stiffness matrix is not singular, False otherwise
+    """
     eldofs = []
     for element in elset.members:
         eldofs.append(element.getEdof())
@@ -36,26 +42,26 @@ def checkModelOnClick(nModule, elModule, bcModule, solModule):
     if not nModule['nset'].members:
         solModule['solveButton'].disabled = True
         printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
-        return False
+        return
     if not elModule['eset'].members:
         solModule['solveButton'].disabled = True
         printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
-        return False
+        return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
         solModule['solveButton'].disabled = True
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
-        return False
+        return
     if not bcModule['sset'].members:
         solModule['solveButton'].disabled = True
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
-        return False
+        return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
         solModule['solveButton'].disabled = True
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
-        return False
+        return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
     solModule['solveButton'].disabled = False
-    return True
+    return
 
 
 def solveOnClick(elModule, bcModule, solModule):
@@ -66,6 +72,7 @@ def solveOnClick(elModule, bcModule, solModule):
     solModule['eigenvalues'] = evals
     solModule['eigenvectors'] = evecs
     printMessage(f"Success <br> eigenvalues = {evals}", "green", solModule['divSolver'])
+    solModule['solveButton'].disabled = True
 
 """
 Solver module layout
