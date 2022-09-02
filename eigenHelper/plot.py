@@ -1,8 +1,8 @@
-from bokeh.models import ColumnDataSource, LabelSet, CustomJS
+from bokeh.models import ColumnDataSource, LabelSet, CustomJS, Label
 from bokeh.plotting import figure
 
 
-def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS):
+def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p = figure(width=800, height=600, match_aspect=True)
     ### NODES
     nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=5, color="navy", alpha=0.5, legend_label="Nodes")
@@ -22,9 +22,10 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS):
     ### LEGEND
     p.legend.location = "top_left"
     p.legend.click_policy="hide"
+    p.add_layout(frequencyText)
     return p
 
-def createPlotLayout(nodeset, elemset, bcset, solution):
+def createPlotLayout(nodeset, elemset, bcset):
     #Nodes CDS
     exNodes, eyNodes, idlist = nodeset.getExEy()
     ncds = ColumnDataSource({'x':exNodes, 'y':eyNodes, 'IDs':idlist})
@@ -39,6 +40,11 @@ def createPlotLayout(nodeset, elemset, bcset, solution):
     scds = [scdsVertical, scdsHotizontal]
     #Eigenmode CDS
     modecds = ColumnDataSource({'x':[], 'y':[]})
-    p = makePlot(ncds, ecds, scds, modecds)
+    #label freqText must be created and updated oustide of the plot
+    freqText = Label(x=50, y=50, x_units='screen', y_units='screen',
+        text='', text_color='blue', text_font='helvetica', text_font_style='bold', text_alpha=0.7,
+        render_mode='css', border_line_color='black', border_line_alpha=0,
+        background_fill_color='white', border_line_width=2, background_fill_alpha=1.0, visible=False)
+    p = makePlot(ncds, ecds, scds, modecds, freqText)
 
-    return p, ncds, ecds, scds, modecds
+    return p, ncds, ecds, scds, modecds, freqText

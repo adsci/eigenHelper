@@ -105,7 +105,7 @@ def checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS):
     return
 
 
-def solveOnClick(elModule, bcModule, solModule, modeCDS):
+def solveOnClick(elModule, bcModule, solModule, modeCDS, frequencyText):
     K = elModule['eset'].getStiffnessMatrix()
     M = elModule['eset'].getMassMatrix()
     bc = bcModule['sset'].gatherConstraints()
@@ -114,15 +114,19 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     exc, eyc = computeContinousDisplacement(elModule['eset'], a_extracted)
     solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc}
     solModule['solution'] = solution
+    #show the first eigenmode directly
     updateSolutionData(solModule, modeCDS, eigenmode=1)
-    # printMessage(f"Success <br> eigenvalues = {np.sqrt(evals)/(2*np.pi)} Hz", "green", solModule['divSolver'])
+    frequencyText.visible = True
+    frequencyText.text=f"f = {np.sqrt(solModule['solution']['eigenvalues'][0])/(2*np.pi):.2f} Hz"
     disableAndHide(solModule['solveButton'])
     enableAndShow(solModule['modeSpinner'])
     solModule['modeSpinner'].value = 1
     solModule['modeSpinner'].high = evals.shape[0]
 
-def changeEigenmode(attr, old, new, solModule, modeCDS):
+def changeEigenmode(attr, old, new, solModule, modeCDS, frequencyText):
     updateSolutionData(solModule, modeCDS, new)
+    frequencyText.visible = True
+    frequencyText.text=f"f = {np.sqrt(solModule['solution']['eigenvalues'][new-1])/(2*np.pi):.2f} Hz"
 
 """
 Solver module layout

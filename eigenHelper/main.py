@@ -24,7 +24,7 @@ def modify_doc(doc, debug=False):
     soldic = createSolverLayout(debug)
 
     #Create Plot module
-    p, ncds, ecds, scds, mcds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'], soldic['solution'])
+    p, ncds, ecds, scds, mcds, fText = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'])
 
     """
     Handlers
@@ -51,8 +51,8 @@ def modify_doc(doc, debug=False):
          solModule=soldic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
 
     soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
-    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
-    soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds))
+    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds, frequencyText=fText))
+    soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds, frequencyText=fText))
 
     """
     Layout
