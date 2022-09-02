@@ -64,45 +64,44 @@ def updateSolutionData(solModule, modeCDS, eigenmode):
         eyclist.append(eyc[i,:,eigenmode-1])
     modeCDS.data = {'x':exclist, 'y':eyclist}
 
-def disableAndHide(widget):
-    widget.visible = False
-    widget.disabled = True
-
-def enableAndShow(widget):
-    widget.visible = True
-    widget.disabled = False
-
 """
 Solver module callbacks
 """
-def checkModelOnClick(nModule, elModule, bcModule, solModule):
+def checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS):
     if not nModule['nset'].members:
         disableAndHide(solModule['solveButton'])
         disableAndHide(solModule['modeSpinner'])
+        modeCDS.data = {}
         printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
         return
     if not elModule['eset'].members:
         disableAndHide(solModule['solveButton'])
         disableAndHide(solModule['modeSpinner'])
+        modeCDS.data = {}
         printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
         return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
         disableAndHide(solModule['solveButton'])
         disableAndHide(solModule['modeSpinner'])
+        modeCDS.data = {}
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
         return
     if not bcModule['sset'].members:
         disableAndHide(solModule['solveButton'])
         disableAndHide(solModule['modeSpinner'])
+        modeCDS.data = {}
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
         return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
         disableAndHide(solModule['solveButton'])
         disableAndHide(solModule['modeSpinner'])
+        modeCDS.data = {}
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
         return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
     enableAndShow(solModule['solveButton'])
+    disableAndHide(solModule['modeSpinner'])
+    modeCDS.data = {}
     return
 
 
@@ -116,9 +115,10 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc}
     solModule['solution'] = solution
     updateSolutionData(solModule, modeCDS, eigenmode=1)
-    printMessage(f"Success <br> eigenvalues = {np.sqrt(evals)/(2*np.pi)} Hz", "green", solModule['divSolver'])
+    # printMessage(f"Success <br> eigenvalues = {np.sqrt(evals)/(2*np.pi)} Hz", "green", solModule['divSolver'])
     disableAndHide(solModule['solveButton'])
     enableAndShow(solModule['modeSpinner'])
+    solModule['modeSpinner'].value = 1
     solModule['modeSpinner'].high = evals.shape[0]
 
 def changeEigenmode(attr, old, new, solModule, modeCDS):

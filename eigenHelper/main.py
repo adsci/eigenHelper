@@ -30,21 +30,27 @@ def modify_doc(doc, debug=False):
     Handlers
     """
     ndic['addNodeButton'].on_click(partial(addNodeOnClick, nModule=ndic, solModule=soldic, nodeCDS=ncds, debugInfo=debug))
-    ndic['delNodeButton'].on_click(partial(delNodeOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, debugInfo=debug))
-    ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, debugInfo=debug))
+    ndic['delNodeButton'].on_click(partial(delNodeOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
+        nodeCDS=ncds, modeCDS=mcds, debugInfo=debug))
+    ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
+        nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, debugInfo=debug))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, elemCDS=ecds, debugInfo=debug))
-    edic['delElemButton'].on_click(partial(delElemOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, elemCDS=ecds, debugInfo=debug))
-    edic['delAllElemButton'].on_click(partial(delAllElemOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, elemCDS=ecds, debugInfo=debug))
+    edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
+        elemCDS=ecds, modeCDS=mcds, debugInfo=debug))
+    edic['delAllElemButton'].on_click(partial(delAllElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
+        elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     edic['assembleButton'].on_click(partial(assembleOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, debugInfo=debug))
 
     bcdic['rbg'].on_click(partial(changeActiveBC, bcModule=bcdic))
     bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
-    bcdic['deleteSupportButton'].on_click(partial(delSupportOnClick, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
-    bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
+    bcdic['deleteSupportButton'].on_click(partial(delSupportOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
+        ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+    bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, \
+         solModule=soldic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
 
-    soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic))
+    soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
     soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
     soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds))
 

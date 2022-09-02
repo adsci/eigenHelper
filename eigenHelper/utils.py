@@ -3,7 +3,6 @@ import calfem.core as cfc
 
 np.set_printoptions(precision=3)
 
-
 class EntitySet():
     def __init__(self):
         self.members=[]
@@ -48,3 +47,11 @@ class EntitySet():
         if not fnd:
             return False
         return self.members[ind]
+
+def disableAndHide(widget):
+    widget.visible = False
+    widget.disabled = True
+
+def enableAndShow(widget):
+    widget.visible = True
+    widget.disabled = False

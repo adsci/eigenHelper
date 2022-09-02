@@ -1,11 +1,11 @@
-from bokeh.models import ColumnDataSource, LabelSet, CustomJS, ImageURL
+from bokeh.models import ColumnDataSource, LabelSet, CustomJS
 from bokeh.plotting import figure
 
 
 def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS):
     p = figure(width=800, height=600, match_aspect=True)
     ### NODES
-    nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
+    nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=5, color="navy", alpha=0.5, legend_label="Nodes")
     nodeLabels = LabelSet(x='x', y='y', text='IDs',
             x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas')
     p.add_layout(nodeLabels)

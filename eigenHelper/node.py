@@ -3,7 +3,9 @@ Node module with helper function and classes
 """
 from bokeh.models import Div, NumericInput, Button
 from utils import *
-from element import activateElementModule, deactivateElementModule
+from element import activateElementModule, deactivateElementModule, clearElementModule
+from bc import deactivateBCModule, clearBCModule
+from solver import checkModelOnClick
 
 class Node():
     def __init__(self,x,y,id):
@@ -81,6 +83,15 @@ def updateNodeText(divText, nodeset, readyFlag, debugInfo):
         newText.append('<br><p style="color:green"><b>Ready for element input</b></p>')
     divText.text = ''.join(newText)
 
+def clearNodeModule(nModule, nodeCDS, debugInfo):
+    nModule['nset'].clear()
+    nModule['nIDWidget'].value = nModule['nset'].getNextID()
+    nModule['assignDOFsButton'].disabled = False
+    updateCoordData(nModule['nset'], nodeCDS)
+    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+
+
+
 """
 Node module callbacks
 """
@@ -98,7 +109,7 @@ def addNodeOnClick(nModule, solModule, nodeCDS, debugInfo):
     nModule['assignDOFsButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delNodeOnClick(nModule, elModule, solModule, nodeCDS, debugInfo):
+def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, modeCDS, debugInfo):
     if (not nModule['nset'].members) or (not nModule['nset'].foundID(nModule['delNodeNumWidget'].value)[0]):
         return
     nModule['nset'].deleteEntityWithID(nModule['delNodeNumWidget'].value)
@@ -108,16 +119,15 @@ def delNodeOnClick(nModule, elModule, solModule, nodeCDS, debugInfo):
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     deactivateElementModule(elModule)
     nModule['assignDOFsButton'].disabled = False
-    solModule['solveButton'].disabled = True
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
-def delAllNodesOnClick(nModule, elModule, solModule, nodeCDS, debugInfo):
-    nModule['nset'].clear()
-    nModule['nIDWidget'].value = nModule['nset'].getNextID()
-    updateCoordData(nModule['nset'], nodeCDS)
-    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+def delAllNodesOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
+    clearNodeModule(nModule, nodeCDS, debugInfo)
+    clearBCModule(bcModule, ssetCDS, debugInfo)
+    deactivateBCModule(bcModule)
+    clearElementModule(elModule, elemCDS, debugInfo)
     deactivateElementModule(elModule)
-    nModule['assignDOFsButton'].disabled = False
-    solModule['solveButton'].disabled = True
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
     if nModule['nset'].getSize() >= 2:

@@ -1,6 +1,7 @@
 from bokeh.models import Div, NumericInput, Button
 from utils import *
-from bc import activateBCModule, deactivateBCModule
+from bc import activateBCModule, deactivateBCModule, clearBCModule
+from solver import checkModelOnClick
 
 class Element():
     def __init__(self, id, nodeA, nodeB, prop):
@@ -98,6 +99,12 @@ class ElementSet(EntitySet):
             cfc.assem(elem.getEdof(), self.getStiffnessMatrix(), elem.getElementStiffnessMatrix())
             cfc.assem(elem.getEdof(), self.getMassMatrix(), elem.getElementMassMatrix())
 
+    def clear(self):
+        EntitySet.clear(self)
+        self.K = []
+        self.M = []
+        self.ndof = 0
+        self.edof = []
 
 
 def createElement(elset, nset, id, na, nb, elprop):
@@ -135,6 +142,15 @@ def deactivateElementModule(elModule):
         val.disabled = True
     elModule['divElements'].disabled = False
 
+def clearElementModule(elModule, elemCDS, debugInfo):
+    elModule['eset'].clear()
+    elModule['eIDWidget'].value = elModule['eset'].getNextID()
+    elModule['assembleButton'].disabled = False
+    updateElementData(elModule['eset'], elemCDS)
+    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+
+
+
 """
 Element module callbacks
 """
@@ -158,7 +174,7 @@ def addElemOnClick(nModule, elModule, solModule, elemCDS, debugInfo):
     elModule['assembleButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delElemOnClick(elModule, bcModule, solModule, elemCDS, debugInfo):
+def delElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, modeCDS, debugInfo):
     if (not elModule['eset'].members) or (not elModule['eset'].foundID(elModule['delElNumWidget'].value)[0]):
         return
     elModule['eset'].deleteEntityWithID(elModule['delElNumWidget'].value)
@@ -168,16 +184,13 @@ def delElemOnClick(elModule, bcModule, solModule, elemCDS, debugInfo):
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
     deactivateBCModule(bcModule)
     elModule['assembleButton'].disabled = False
-    solModule['solveButton'].disabled = True
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
-def delAllElemOnClick(elModule, bcModule, solModule, elemCDS, debugInfo):
-    elModule['eset'].clear()
-    elModule['eIDWidget'].value = elModule['eset'].getNextID()
-    updateElementData(elModule['eset'], elemCDS)
-    updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+def delAllElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, ssetCDS, modeCDS, debugInfo):
+    clearBCModule(bcModule, ssetCDS, debugInfo)
     deactivateBCModule(bcModule)
-    elModule['assembleButton'].disabled = False
-    solModule['solveButton'].disabled = True
+    clearElementModule(elModule, elemCDS, debugInfo)
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def assembleOnClick(elModule, bcModule, solModule, debugInfo):
     if elModule['eset'].members:

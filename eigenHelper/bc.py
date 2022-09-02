@@ -1,5 +1,6 @@
 from bokeh.models import Div, RadioButtonGroup, NumericInput, Button
 from utils import *
+from solver import checkModelOnClick
 
 class Support():
     def __init__(self, typeID, node):
@@ -141,6 +142,11 @@ def updateSupportText(divText, supset, readyFlag, debugInfo):
         newText.append('<br><p style="color:green"><b>Ready for check</b></p>')
     divText.text = ''.join(newText)
 
+def clearBCModule(bcModule, ssetCDS, debugInfo):
+    bcModule['sset'].clear()
+    bcModule['addToNodeWidget'].value = 0
+    updateSupportData(bcModule['sset'], ssetCDS)
+    updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
 
 """
 Boundary Conditions module callbacks
@@ -164,7 +170,7 @@ def addSupportOnClick(nModule, bcModule, solModule, ssetCDS, debugInfo):
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
     solModule['solveButton'].disabled = True
 
-def delSupportOnClick(bcModule, solModule, ssetCDS, debugInfo):
+def delSupportOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, debugInfo):
     if (not bcModule['sset'].members) or (not bcModule['sset'].foundAtNode(bcModule['deleteFromNodeWidget'].value)[0]):
         return
     bcModule['sset'].deleteAtNode(bcModule['deleteFromNodeWidget'].value)
@@ -172,14 +178,11 @@ def delSupportOnClick(bcModule, solModule, ssetCDS, debugInfo):
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
-    solModule['solveButton'].disabled = True
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
-def delAllSupportsOnClick(bcModule, solModule, ssetCDS, debugInfo):
-    bcModule['sset'].clear()
-    bcModule['addToNodeWidget'].value = 0
-    updateSupportData(bcModule['sset'], ssetCDS)
-    updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
-    solModule['solveButton'].disabled = True
+def delAllSupportsOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, debugInfo):
+    clearBCModule(bcModule, ssetCDS, debugInfo)
+    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 
 """
