@@ -45,6 +45,11 @@ def computeContinousDisplacement(elset, disp_extracted):
     nel = elset.getSize()
     ex_cont = np.zeros((nel,21,disp_extracted.shape[2]))
     ey_cont = np.zeros((nel,21,disp_extracted.shape[2]))
+    dx_max = float(np.max(ex))-float(np.min(ex))
+    dy_max = float(np.max(ey))-float(np.min(ey))
+    dl_max = max(dx_max, dy_max)
+    ed_max = float(np.max(np.max(np.abs(disp_extracted))))
+    sfac = 0.1*dl_max/ed_max
     for i in range(disp_extracted.shape[2]):
         ex_cont[:,:,i], ey_cont[:,:,i] = cfc.beam2crd(np.array(ex), np.array(ey), disp_extracted[:,:,i], 0.5)
     return ex_cont, ey_cont

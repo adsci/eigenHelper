@@ -18,7 +18,7 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS):
     p.image_url(url='urls', x='x', y='y', w='w', h='h', w_units='screen', h_units='screen', \
         anchor='center_left', source=ssetCDS[1], legend_label="Supports")
     ### EIGENMODES
-    p.multi_line(xs='x', ys='y', source=modeCDS, line_width=5, line_color='black', legend_label="Eigenmodes")
+    p.multi_line(xs='x', ys='y', source=modeCDS, line_width=5, line_color='black', legend_label="Eigenmode")
     ### LEGEND
     p.legend.location = "top_left"
     p.legend.click_policy="hide"
