@@ -92,6 +92,14 @@ class ElementSet(EntitySet):
         self.edof = edof
         return self.edof
 
+    def setNdof(self):
+        curmax = np.NINF
+        for elem in self.members:
+            maxdof = np.max(elem.getEdof())
+            if maxdof > curmax:
+                curmax = maxdof
+        self.ndof = curmax
+
     def assemble(self):
         self.K = np.zeros((self.ndof, self.ndof))
         self.M = np.zeros((self.ndof, self.ndof))
@@ -167,7 +175,7 @@ def addElemOnClick(nModule, elModule, solModule, elemCDS, debugInfo):
     if not nElement:
         return
     elModule['eset'].add(nElement)
-    elModule['eset'].ndof = np.max(nElement.getEdof())
+    elModule['eset'].setNdof()
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'],elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
