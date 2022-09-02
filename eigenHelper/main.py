@@ -24,7 +24,7 @@ def modify_doc(doc, debug=False):
     soldic = createSolverLayout(debug)
 
     #Create Plot module
-    p, ncds, ecds, scds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'])
+    p, ncds, ecds, scds, mcds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'], soldic['solution'])
 
     """
     Handlers
@@ -45,7 +45,8 @@ def modify_doc(doc, debug=False):
     bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
 
     soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic))
-    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic))
+    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
+    soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds))
 
     """
     Layout
@@ -64,7 +65,7 @@ def modify_doc(doc, debug=False):
         column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) )), \
         Spacer(width=20), bcdic['divSupports'])
 
-    solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), soldic['divSolver'])
+    solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), soldic['modeSpinner'], soldic['divSolver'])
 
     layout = row(column(nodeLayout, elemLayout, bcLayout), column(p, Spacer(height=50), solLayout))
     doc.add_root(layout)

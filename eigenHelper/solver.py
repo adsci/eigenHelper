@@ -1,4 +1,4 @@
-from bokeh.models import Div, Button
+from bokeh.models import Div, Button, Spinner
 from utils import *
 
 def printMessage(message, color, divSol):
@@ -34,54 +34,102 @@ def checkStiffnessSingularity(elset, supset):
         return False
     return True
 
+def extractEigenvectors(elset, evecs):
+    disp_extracted = np.zeros((elset.getSize(),6,evecs.shape[1]))
+    for i in range(evecs.shape[1]):
+        disp_extracted[:,:,i] = cfc.extract_eldisp(elset.getModelEdof(),evecs[:,i])
+    return disp_extracted
+
+def computeContinousDisplacement(elset, disp_extracted):
+    ex, ey = elset.getExEy()
+    nel = elset.getSize()
+    ex_cont = np.zeros((nel,21,disp_extracted.shape[2]))
+    ey_cont = np.zeros((nel,21,disp_extracted.shape[2]))
+    for i in range(disp_extracted.shape[2]):
+        ex_cont[:,:,i], ey_cont[:,:,i] = cfc.beam2crd(np.array(ex), np.array(ey), disp_extracted[:,:,i], 0.5)
+    return ex_cont, ey_cont
+
+def updateSolutionData(solModule, modeCDS, eigenmode):
+    exc = solModule['solution']['exc']
+    eyc = solModule['solution']['eyc']
+    nel = exc.shape[0]
+    exclist, eyclist = [], []
+    for i in range(nel):
+        exclist.append(exc[i,:,eigenmode-1])
+        eyclist.append(eyc[i,:,eigenmode-1])
+    modeCDS.data = {'x':exclist, 'y':eyclist}
+
+def disableAndHide(widget):
+    widget.visible = False
+    widget.disabled = True
+
+def enableAndShow(widget):
+    widget.visible = True
+    widget.disabled = False
 
 """
 Solver module callbacks
 """
 def checkModelOnClick(nModule, elModule, bcModule, solModule):
     if not nModule['nset'].members:
-        solModule['solveButton'].disabled = True
+        disableAndHide(solModule['solveButton'])
+        disableAndHide(solModule['modeSpinner'])
         printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
         return
     if not elModule['eset'].members:
-        solModule['solveButton'].disabled = True
+        disableAndHide(solModule['solveButton'])
+        disableAndHide(solModule['modeSpinner'])
         printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
         return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
-        solModule['solveButton'].disabled = True
+        disableAndHide(solModule['solveButton'])
+        disableAndHide(solModule['modeSpinner'])
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
         return
     if not bcModule['sset'].members:
-        solModule['solveButton'].disabled = True
+        disableAndHide(solModule['solveButton'])
+        disableAndHide(solModule['modeSpinner'])
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
         return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
-        solModule['solveButton'].disabled = True
+        disableAndHide(solModule['solveButton'])
+        disableAndHide(solModule['modeSpinner'])
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
         return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
-    solModule['solveButton'].disabled = False
+    enableAndShow(solModule['solveButton'])
     return
 
 
-def solveOnClick(elModule, bcModule, solModule):
+def solveOnClick(elModule, bcModule, solModule, modeCDS):
     K = elModule['eset'].getStiffnessMatrix()
     M = elModule['eset'].getMassMatrix()
     bc = bcModule['sset'].gatherConstraints()
     evals, evecs = cfc.eigen(K,M,bc)
-    solModule['eigenvalues'] = evals
-    solModule['eigenvectors'] = evecs
-    printMessage(f"Success <br> eigenvalues = {evals}", "green", solModule['divSolver'])
-    solModule['solveButton'].disabled = True
+    a_extracted = extractEigenvectors(elModule['eset'], evecs)
+    exc, eyc = computeContinousDisplacement(elModule['eset'], a_extracted)
+    solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc}
+    solModule['solution'] = solution
+    updateSolutionData(solModule, modeCDS, eigenmode=1)
+    printMessage(f"Success <br> eigenvalues = {np.sqrt(evals)/(2*np.pi)} Hz", "green", solModule['divSolver'])
+    disableAndHide(solModule['solveButton'])
+    enableAndShow(solModule['modeSpinner'])
+    solModule['modeSpinner'].high = evals.shape[0]
+
+def changeEigenmode(attr, old, new, solModule, modeCDS):
+    updateSolutionData(solModule, modeCDS, new)
 
 """
 Solver module layout
 """
 def createSolverLayout(debug=False):
     checkModelButton = Button(label="Check Model", button_type="success", width=100, disabled=False)
-    solveButton = Button(label="Solve", button_type="success", width=100, disabled=True)
+    solveButton = Button(label="Solve", button_type="success", width=100, disabled=True, visible=False)
+    modeSpinner = Spinner(title="Eigenmode number", low=1, high=10, step=1, value=1, mode='int', width=100, visible=False, disabled=True)
     divSolver = Div(text= "", width=350, height=300)
+    solution = {}
 
-    solverLayoutDict = {'checkModelButton': checkModelButton, 'solveButton':solveButton, 'divSolver':divSolver}
+    solverLayoutDict = {'checkModelButton': checkModelButton, 'solveButton':solveButton, \
+        'modeSpinner':modeSpinner, 'divSolver':divSolver, 'solution':solution}
     return solverLayoutDict
 

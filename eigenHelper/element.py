@@ -61,6 +61,7 @@ class ElementSet(EntitySet):
         self.K = []
         self.M = []
         self.ndof = 0
+        self.edof = []
 
     def foundNodes(self,n1,n2):
         for elem in self.members:
@@ -82,6 +83,13 @@ class ElementSet(EntitySet):
 
     def getMassMatrix(self):
         return self.M
+
+    def getModelEdof(self):
+        edof = np.zeros((self.getSize(),6), dtype=np.int32)
+        for nel, element in enumerate(self.members):
+            edof[nel,:] = element.getEdof()
+        self.edof = edof
+        return self.edof
 
     def assemble(self):
         self.K = np.zeros((self.ndof, self.ndof))

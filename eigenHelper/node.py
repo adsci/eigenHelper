@@ -57,7 +57,7 @@ class NodeSet(EntitySet):
 
     def assignDOFs(self):
         for i, node in enumerate(self.members):
-            node.setDOFs(np.array([3*(i+1)-2, 3*(i+1)-1, 3*(i+1)]))
+            node.setDOFs(np.array([3*(i+1)-2, 3*(i+1)-1, 3*(i+1)], dtype=np.int32))
 
 
 def createNode(nodeset, x, y, id):
