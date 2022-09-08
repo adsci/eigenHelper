@@ -38,13 +38,13 @@ def createPlotLayout(nodeset, elemset, bcset):
     exSupp, eySupp, wSupp, hSupp, urls = bcset.getExEy(horizontal=True)
     scdsHotizontal = ColumnDataSource({'x':exSupp, 'y':eySupp, 'w':wSupp, 'h':hSupp, 'urls':urls})
     scds = [scdsVertical, scdsHotizontal]
-    #Eigenmode CDS
-    modecds = ColumnDataSource({'x':[], 'y':[]})
     #label freqText must be created and updated oustide of the plot
     freqText = Label(x=50, y=50, x_units='screen', y_units='screen',
         text='', text_color='blue', text_font='helvetica', text_font_style='bold', text_alpha=0.7,
         render_mode='css', border_line_color='black', border_line_alpha=0,
         background_fill_color='white', border_line_width=2, background_fill_alpha=1.0, visible=False)
-    p = makePlot(ncds, ecds, scds, modecds, freqText)
+    #Eigenmode CDS
+    modecds = ( ColumnDataSource({'x':[], 'y':[]}), freqText )
+    p = makePlot(ncds, ecds, scds, modecds[0], modecds[1])
 
-    return p, ncds, ecds, scds, modecds, freqText
+    return p, ncds, ecds, scds, modecds
