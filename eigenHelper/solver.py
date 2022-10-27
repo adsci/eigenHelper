@@ -28,6 +28,8 @@ def checkStiffnessSingularity(elset, supset):
     dofs = np.unique(eldofs)
     bc = supset.gatherConstraints()
     free = np.setdiff1d(dofs, bc) - 1
+    if not free.any():
+        return False
     Kfree = elset.getStiffnessMatrix()[np.ix_(free,free)]
     kRank = np.linalg.matrix_rank(Kfree)
     if kRank < min(Kfree.shape):
