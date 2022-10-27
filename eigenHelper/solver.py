@@ -139,7 +139,7 @@ Solver module layout
 def createSolverLayout(debug=False):
     checkModelButton = Button(label="Check Model", button_type="success", width=100, disabled=False)
     solveButton = Button(label="Solve", button_type="success", width=100, disabled=True, visible=False)
-    modeSpinner = Spinner(title="Eigenmode number", low=1, high=10, step=1, value=1, mode='int', width=100, visible=False, disabled=True)
+    modeSpinner = Spinner(title="Eigenmode associated with eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=100, visible=False, disabled=True)
     divSolver = Div(text= "", width=350, height=300)
     solution = {}
 
