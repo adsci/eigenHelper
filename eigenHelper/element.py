@@ -153,6 +153,8 @@ def deactivateElementModule(elModule):
 def clearElementModule(elModule, elemCDS, debugInfo):
     elModule['eset'].clear()
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
+    elModule['enaWidget'].value = 1
+    elModule['enbWidget'].value = 2
     elModule['assembleButton'].disabled = False
     updateElementData(elModule['eset'], elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
