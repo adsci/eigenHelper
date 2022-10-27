@@ -10,4 +10,4 @@ ENV PYTHONPATH "/"
 
 COPY eigenHelper/ ./eigenHelper/
 ENTRYPOINT ["bokeh", "serve"]
-CMD ["eigenHelper"]
+CMD ["eigenHelper", "--allow-websocket-origin=*"]
