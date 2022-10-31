@@ -1,4 +1,4 @@
-from bokeh.models import Div, Button, Spinner
+from bokeh.models import Div, Button, Spinner, Slider
 from utils import *
 
 def printMessage(message, color, divSol):
@@ -96,43 +96,38 @@ Solver module callbacks
 """
 def checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS):
     if not nModule['nset'].members:
-        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
-            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
         return
     if not elModule['eset'].members:
-        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
-            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
         return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
-        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
-            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
         return
     if not bcModule['sset'].members:
-        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
-            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
         return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
-        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
-            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
         return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
     enableAndShow(solModule['solveButton'])
-    for widget in [solModule['modeSpinner'], solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+    for widget in [solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
         disableAndHide(widget)
     clearModeCDS(modeCDS)
     return
@@ -151,26 +146,19 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     #show the first eigenmode directly
     updateSolutionData(solModule, modeCDS, eigenmode=1)
     disableAndHide(solModule['solveButton'])
-    for widget in [solModule['modeSpinner'], solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton']]:
+    for widget in [solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton']]:
         enableAndShow(widget)
     solModule['modeSpinner'].value = 1
     solModule['modeSpinner'].high = evals.shape[0]
+    solModule['scaleSlider'].value = 1
 
 def changeEigenmode(attr, old, new, solModule, modeCDS):
     updateSolutionData(solModule, modeCDS, new)
 
-def scaleUp(elModule, solModule, modeCDS):
-    solModule['solution']['sfac'] *= 1.1
+def changeScale(attr, old, new, elModule, solModule, modeCDS):
+    sfac = solModule['solution']['sfac'] * new
     exc, eyc, _ = computeContinousDisplacement(elModule['eset'], solModule['solution']['a_extracted'], \
-        solModule['solution']['sfac'])
-    solModule['solution']['exc'] = exc
-    solModule['solution']['eyc'] = eyc
-    updateSolutionData(solModule, modeCDS, solModule['modeSpinner'].value)
-
-def scaleDown(elModule, solModule, modeCDS):
-    solModule['solution']['sfac'] *= 0.9
-    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], solModule['solution']['a_extracted'], \
-        solModule['solution']['sfac'])
+        sfac)
     solModule['solution']['exc'] = exc
     solModule['solution']['eyc'] = eyc
     updateSolutionData(solModule, modeCDS, solModule['modeSpinner'].value)
@@ -178,7 +166,8 @@ def scaleDown(elModule, solModule, modeCDS):
 def flip(elModule, solModule, modeCDS):
     solModule['solution']['eigenvectors'] = np.negative(solModule['solution']['eigenvectors'])
     a_extracted = extractEigenvectors(elModule['eset'], solModule['solution']['eigenvectors'])
-    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], a_extracted, solModule['solution']['sfac'])
+    sfac = solModule['solution']['sfac'] * solModule['scaleSlider'].value
+    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], a_extracted, sfac)
     solModule['solution']['a_extracted'] = a_extracted
     solModule['solution']['exc'] = exc
     solModule['solution']['eyc'] = eyc
@@ -191,15 +180,14 @@ Solver module layout
 def createSolverLayout(debug=False):
     checkModelButton = Button(label="Check Model", button_type="success", width=100, disabled=False)
     solveButton = Button(label="Solve", button_type="success", width=100, disabled=True, visible=False)
-    modeSpinner = Spinner(title="Eigenmode associated with eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=75, visible=False, disabled=True)
-    scaleUpButton = Button(label="+", button_type="default", width=50, disabled=True, visible=False)
-    scaleDownButton = Button(label="-", button_type="default", width=50, disabled=True, visible=False)
+    modeSpinner = Spinner(title="Eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=75, visible=False, disabled=True)
+    scaleSlider = Slider(start=0.01, end=3, value=1, step=0.01, title="Scale factor", disabled=True, visible=False)
     flipButton = Button(label="Flip", button_type="default", width=75, disabled=True, visible=False)
     divSolver = Div(text= "", width=350, height=300)
     solution = {}
 
     solverLayoutDict = {'checkModelButton': checkModelButton, 'solveButton':solveButton, \
-        'modeSpinner':modeSpinner, 'scaleUpButton':scaleUpButton, 'scaleDownButton':scaleDownButton, 'flipButton':flipButton, \
+        'modeSpinner':modeSpinner,  'scaleSlider':scaleSlider, 'flipButton':flipButton, \
         'divSolver':divSolver, 'solution':solution}
     return solverLayoutDict
 
