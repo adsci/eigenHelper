@@ -86,6 +86,8 @@ def updateNodeText(divText, nodeset, readyFlag, debugInfo):
 def clearNodeModule(nModule, nodeCDS, debugInfo):
     nModule['nset'].clear()
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
+    nModule['nXWidget'].value = 0
+    nModule['nYWidget'].value = 0
     nModule['assignDOFsButton'].disabled = False
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
