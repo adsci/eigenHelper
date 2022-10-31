@@ -21,6 +21,7 @@ def checkDanglingNodes(nset, elset):
 def checkStiffnessSingularity(elset, supset):
     """
     Returns True if the stiffness matrix is not singular, False otherwise
+    Also returns False if there are no free degrees of freedom.
     """
     eldofs = []
     for element in elset.members:
@@ -37,12 +38,27 @@ def checkStiffnessSingularity(elset, supset):
     return True
 
 def extractEigenvectors(elset, evecs):
+    """
+    Builds a multidimensional array with size (n_elements x 6 x n_eigenvectors).
+    For each eigenvector and element nodal displacements/rotations
+    [u1 v1 phi1 u2 v2 phi2].T
+    are reconstructed from the global solution using CALFEM function extract_eldisp.
+    """
     disp_extracted = np.zeros((elset.getSize(),6,evecs.shape[1]))
     for i in range(evecs.shape[1]):
         disp_extracted[:,:,i] = cfc.extract_eldisp(elset.getModelEdof(),evecs[:,i])
     return disp_extracted
 
-def computeContinousDisplacement(elset, disp_extracted):
+def computeContinousDisplacement(elset, disp_extracted, sfac=None):
+    """
+    Builds multidimensional arrays ex_cont, ey_cont with size (n_elements x 21 x n_eigenvectors)
+    and computed continuous displacements (in x- and y-directions, respectively)
+    at 21 points along the beam element from the global displacements/rotations.
+    For each eigenvector and element the corresponding displacements
+    [u1 u2 u3 ... u21].T and [v1 v2 v3 ... v21].T
+    are computed from element nodal values using CALFEM function beam2crd and put into the corresponding
+    column of ex_cont and ey_cont.
+    """
     ex, ey = elset.getExEy()
     nel = elset.getSize()
     ex_cont = np.zeros((nel,21,disp_extracted.shape[2]))
@@ -51,10 +67,12 @@ def computeContinousDisplacement(elset, disp_extracted):
     dy_max = float(np.max(ey))-float(np.min(ey))
     dl_max = max(dx_max, dy_max)
     ed_max = float(np.max(np.max(np.abs(disp_extracted))))
-    sfac = 0.1*dl_max/ed_max
+    if not sfac:
+        sfac = 1*dl_max/ed_max
     for i in range(disp_extracted.shape[2]):
-        ex_cont[:,:,i], ey_cont[:,:,i] = cfc.beam2crd(np.array(ex), np.array(ey), disp_extracted[:,:,i], 0.5)
-    return ex_cont, ey_cont
+        ex_cont[:,:,i], ey_cont[:,:,i] = cfc.beam2crd(np.array(ex), np.array(ey), disp_extracted[:,:,i], sfac)
+    # print(ex_cont, ey_cont)
+    return ex_cont, ey_cont, sfac
 
 def updateSolutionData(solModule, modeCDS, eigenmode):
     exc = solModule['solution']['exc']
@@ -78,38 +96,44 @@ Solver module callbacks
 """
 def checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS):
     if not nModule['nset'].members:
-        disableAndHide(solModule['solveButton'])
-        disableAndHide(solModule['modeSpinner'])
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
+            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+            disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
         return
     if not elModule['eset'].members:
-        disableAndHide(solModule['solveButton'])
-        disableAndHide(solModule['modeSpinner'])
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
+            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+            disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
         return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
-        disableAndHide(solModule['solveButton'])
-        disableAndHide(solModule['modeSpinner'])
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
+            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+            disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
         return
     if not bcModule['sset'].members:
-        disableAndHide(solModule['solveButton'])
-        disableAndHide(solModule['modeSpinner'])
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
+            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+            disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
         return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
-        disableAndHide(solModule['solveButton'])
-        disableAndHide(solModule['modeSpinner'])
+        for widget in [solModule['solveButton'], solModule['modeSpinner'], \
+            solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+            disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
         return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
     enableAndShow(solModule['solveButton'])
-    disableAndHide(solModule['modeSpinner'])
+    for widget in [solModule['modeSpinner'], solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton'] ]:
+        disableAndHide(widget)
     clearModeCDS(modeCDS)
     return
 
@@ -120,20 +144,46 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     bc = bcModule['sset'].gatherConstraints()
     evals, evecs = cfc.eigen(K,M,bc)
     a_extracted = extractEigenvectors(elModule['eset'], evecs)
-    exc, eyc = computeContinousDisplacement(elModule['eset'], a_extracted)
-    solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc}
+    exc, eyc, sfac = computeContinousDisplacement(elModule['eset'], a_extracted)
+    solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc, \
+        'sfac':sfac}
     solModule['solution'] = solution
     #show the first eigenmode directly
     updateSolutionData(solModule, modeCDS, eigenmode=1)
     disableAndHide(solModule['solveButton'])
-    enableAndShow(solModule['modeSpinner'])
+    for widget in [solModule['modeSpinner'], solModule['scaleUpButton'], solModule['scaleDownButton'], solModule['flipButton']]:
+        enableAndShow(widget)
     solModule['modeSpinner'].value = 1
     solModule['modeSpinner'].high = evals.shape[0]
 
 def changeEigenmode(attr, old, new, solModule, modeCDS):
     updateSolutionData(solModule, modeCDS, new)
-    # modeCDS[1].visible = True
-    # modeCDS[1].text=f"f = {np.sqrt(solModule['solution']['eigenvalues'][new-1])/(2*np.pi):.2f} Hz"
+
+def scaleUp(elModule, solModule, modeCDS):
+    solModule['solution']['sfac'] *= 1.1
+    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], solModule['solution']['a_extracted'], \
+        solModule['solution']['sfac'])
+    solModule['solution']['exc'] = exc
+    solModule['solution']['eyc'] = eyc
+    updateSolutionData(solModule, modeCDS, solModule['modeSpinner'].value)
+
+def scaleDown(elModule, solModule, modeCDS):
+    solModule['solution']['sfac'] *= 0.9
+    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], solModule['solution']['a_extracted'], \
+        solModule['solution']['sfac'])
+    solModule['solution']['exc'] = exc
+    solModule['solution']['eyc'] = eyc
+    updateSolutionData(solModule, modeCDS, solModule['modeSpinner'].value)
+
+def flip(elModule, solModule, modeCDS):
+    solModule['solution']['eigenvectors'] = np.negative(solModule['solution']['eigenvectors'])
+    a_extracted = extractEigenvectors(elModule['eset'], solModule['solution']['eigenvectors'])
+    exc, eyc, _ = computeContinousDisplacement(elModule['eset'], a_extracted, solModule['solution']['sfac'])
+    solModule['solution']['a_extracted'] = a_extracted
+    solModule['solution']['exc'] = exc
+    solModule['solution']['eyc'] = eyc
+    updateSolutionData(solModule, modeCDS, solModule['modeSpinner'].value)
+
 
 """
 Solver module layout
@@ -141,11 +191,15 @@ Solver module layout
 def createSolverLayout(debug=False):
     checkModelButton = Button(label="Check Model", button_type="success", width=100, disabled=False)
     solveButton = Button(label="Solve", button_type="success", width=100, disabled=True, visible=False)
-    modeSpinner = Spinner(title="Eigenmode associated with eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=100, visible=False, disabled=True)
+    modeSpinner = Spinner(title="Eigenmode associated with eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=75, visible=False, disabled=True)
+    scaleUpButton = Button(label="+", button_type="default", width=50, disabled=True, visible=False)
+    scaleDownButton = Button(label="-", button_type="default", width=50, disabled=True, visible=False)
+    flipButton = Button(label="Flip", button_type="default", width=75, disabled=True, visible=False)
     divSolver = Div(text= "", width=350, height=300)
     solution = {}
 
     solverLayoutDict = {'checkModelButton': checkModelButton, 'solveButton':solveButton, \
-        'modeSpinner':modeSpinner, 'divSolver':divSolver, 'solution':solution}
+        'modeSpinner':modeSpinner, 'scaleUpButton':scaleUpButton, 'scaleDownButton':scaleDownButton, 'flipButton':flipButton, \
+        'divSolver':divSolver, 'solution':solution}
     return solverLayoutDict
 

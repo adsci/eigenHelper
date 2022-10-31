@@ -53,6 +53,9 @@ def modify_doc(doc, debug=False):
     soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
     soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
     soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds))
+    soldic['scaleUpButton'].on_click(partial(scaleUp, elModule=edic, solModule=soldic, modeCDS=mcds))
+    soldic['scaleDownButton'].on_click(partial(scaleDown, elModule=edic, solModule=soldic, modeCDS=mcds))
+    soldic['flipButton'].on_click(partial(flip, elModule=edic, solModule=soldic, modeCDS=mcds))
 
     """
     Layout
@@ -71,7 +74,11 @@ def modify_doc(doc, debug=False):
         column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) )), \
         Spacer(width=20), bcdic['divSupports'])
 
-    solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), soldic['modeSpinner'], soldic['divSolver'])
+    solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), \
+        row(soldic['modeSpinner'], Spacer(width=120), \
+            column( Spacer(height=20), soldic['scaleUpButton']), column(Spacer(height=20), soldic['scaleDownButton']), \
+                 column(Spacer(height=20), soldic['flipButton'])), \
+        soldic['divSolver'])
 
     layout = row(column(nodeLayout, elemLayout, bcLayout), column(p, Spacer(height=50), solLayout))
     doc.add_root(layout)
