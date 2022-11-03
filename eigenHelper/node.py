@@ -3,15 +3,17 @@ Node module with helper function and classes
 """
 from bokeh.models import Div, NumericInput, Button
 from utils import *
-from element import activateElementModule, deactivateElementModule, clearElementModule
-from bc import deactivateBCModule, clearBCModule
-from solver import checkModelOnClick
+from copy import deepcopy
+import element
+import bc
+import solver
 
 class Node():
     def __init__(self,x,y,id):
         self.coords=[x,y]
         self.id = id
         self.dofs = []
+        self.dangling = False
 
     def printInfo(self, debug=False):
         if debug:
@@ -31,14 +33,25 @@ class Node():
     def getCoords(self):
         return self.coords
 
-    def setID(self,newID):
+    def setID(self, newID):
         self.id = newID
 
     def getDOFs(self):
         return self.dofs
 
-    def setDOFs(self,dofArray):
+    def setDOFs(self, dofArray):
         self.dofs = dofArray
+
+    def duplicateAsHinge(self, hingeid, nextdof):
+        hingeNode = deepcopy(self)
+        hingeNode.setID(hingeid)
+        hingeNode.dofs[-1] = nextdof
+        danglingDof = self.markAsDangling()
+        return hingeNode, danglingDof
+
+    def markAsDangling(self):
+        self.dangling = True
+        return self.dofs[-1]
 
 class NodeSet(EntitySet):
     def foundCoords(self,x,y):
@@ -60,6 +73,24 @@ class NodeSet(EntitySet):
     def assignDOFs(self):
         for i, node in enumerate(self.members):
             node.setDOFs(np.array([3*(i+1)-2, 3*(i+1)-1, 3*(i+1)], dtype=np.int32))
+
+    def getNextDOF(self):
+        maxdof = np.NINF
+        for member in self.members:
+            if max(member.getDOFs()) > maxdof:
+                maxdof = max(member.getDOFs())
+        if maxdof == np.NINF:
+            maxdof = 0
+        return maxdof + 1
+
+    def cleanUpAfterHinges(self, danglingDofs):
+        flagged = []
+        for node in self.members:
+            if (node.getDOFs()[-1] in danglingDofs) and (node not in flagged):
+                flagged.append(node)
+
+        for danglingNode in flagged:
+            self.deleteEntityWithID(danglingNode.getID())
 
 
 def createNode(nodeset, x, y, id):
@@ -119,23 +150,23 @@ def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, modeCDS, deb
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
-    deactivateElementModule(elModule)
+    element.deactivateElementModule(elModule)
     nModule['assignDOFsButton'].disabled = False
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def delAllNodesOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
     clearNodeModule(nModule, nodeCDS, debugInfo)
-    clearBCModule(bcModule, ssetCDS, debugInfo)
-    deactivateBCModule(bcModule)
-    clearElementModule(elModule, elemCDS, debugInfo)
-    deactivateElementModule(elModule)
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    bc.clearBCModule(bcModule, ssetCDS, debugInfo)
+    bc.deactivateBCModule(bcModule)
+    element.clearElementModule(elModule, elemCDS, debugInfo)
+    element.deactivateElementModule(elModule)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
     if nModule['nset'].getSize() >= 2:
         nModule['nset'].assignDOFs()
         updateNodeText(nModule['divNodes'], nModule['nset'], True, debugInfo)
-        activateElementModule(elModule, debugInfo)
+        element.activateElementModule(elModule, debugInfo)
         nModule['assignDOFsButton'].disabled = True
         solModule['solveButton'].disabled = True
 

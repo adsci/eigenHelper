@@ -36,12 +36,13 @@ def modify_doc(doc, debug=False):
         nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, debugInfo=debug))
 
-    edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, elemCDS=ecds, debugInfo=debug))
+    edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, elemCDS=ecds, debugInfo=debug))
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         elemCDS=ecds, modeCDS=mcds, debugInfo=debug))
     edic['delAllElemButton'].on_click(partial(delAllElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
-    edic['assembleButton'].on_click(partial(assembleOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, debugInfo=debug))
+    edic['assembleButton'].on_click(partial(assembleOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
+        nodeCDS=ncds, debugInfo=debug))
 
     bcdic['rbg'].on_click(partial(changeActiveBC, bcModule=bcdic))
     bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
@@ -63,9 +64,9 @@ def modify_doc(doc, debug=False):
         column(Spacer(width=100,height=17), ndic['assignDOFsButton'], Spacer(width=100,height=ndic['nXWidget'].height+10), \
             ndic['delNodeNumWidget'], ndic['delNodeButton'], ndic['delAllNodesButton']), Spacer(width=25), ndic['divNodes'])
 
-    elemLayout =  row(column(edic['enaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], edic['addElemButton']), \
-                    column(edic['enbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
-                    column(edic['eIDWidget'], Spacer(width=100,height=17), edic['assembleButton'], edic['delElNumWidget'], \
+    elemLayout =  row(column(edic['enaWidget'], edic['hinaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], edic['addElemButton']), \
+                    column(edic['enbWidget'], edic['hinbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
+                    column(edic['eIDWidget'], Spacer(width=100,height=47), edic['assembleButton'], edic['delElNumWidget'], \
                          edic['delElemButton'], edic['delAllElemButton']), \
                              Spacer(width=25), edic['divElements'])
 

@@ -1,7 +1,8 @@
-from bokeh.models import Div, NumericInput, Button
+from bokeh.models import Div, NumericInput, Button, CheckboxGroup
 from utils import *
-from bc import activateBCModule, deactivateBCModule, clearBCModule
-from solver import checkModelOnClick
+import node
+import bc
+import solver
 
 class Element():
     def __init__(self, id, nodeA, nodeB, prop):
@@ -63,6 +64,8 @@ class ElementSet(EntitySet):
         self.M = []
         self.ndof = 0
         self.edof = []
+        self.ddofs = np.array([], dtype=np.int32)
+        self.potentialddofs = []
 
     def foundNodes(self,n1,n2):
         for elem in self.members:
@@ -113,6 +116,17 @@ class ElementSet(EntitySet):
         self.M = []
         self.ndof = 0
         self.edof = []
+        self.ddofs = np.array([], dtype=np.int32)
+        self.potentialddofs = []
+
+    def checkDanglingDOFs(self, potentialDofs):
+        edofs = self.getModelEdof()
+        for potentialDanglingDof in potentialDofs:
+            if potentialDanglingDof not in edofs:
+                self.addDanglingDOF(potentialDanglingDof)
+
+    def addDanglingDOF(self, dof):
+        self.ddofs = np.unique(np.append(self.ddofs,dof))
 
 
 def createElement(elset, nset, id, na, nb, elprop):
@@ -164,16 +178,37 @@ def clearElementModule(elModule, elemCDS, debugInfo):
 """
 Element module callbacks
 """
-def addElemOnClick(nModule, elModule, solModule, elemCDS, debugInfo):
+def addElemOnClick(nModule, elModule, solModule, nodeCDS, elemCDS, debugInfo):
     if elModule['eIDWidget'].value <= 0:
         return
     #check whether the element can be added
     na = nModule['nset'].getEntityWithID(elModule['enaWidget'].value)
     nb = nModule['nset'].getEntityWithID(elModule['enbWidget'].value)
+    elprop = {'E':elModule['eYoungWidget'].value, 'rho':elModule['eDensityWidget'].value, 'A':elModule['eAreaWidget'].value, 'I':elModule['eInertiaWidget'].value}
     if not (na and nb):
         return
-    nElement = createElement(elModule['eset'], nModule['nset'], elModule['eIDWidget'].value, na, \
-        nb, {'E':elModule['eYoungWidget'].value, 'rho':elModule['eDensityWidget'].value, 'A':elModule['eAreaWidget'].value, 'I':elModule['eInertiaWidget'].value})
+    #create the element - first check for possible hinges
+    if not (elModule['hinaWidget'].active or elModule['hinbWidget'].active):
+        nElement = createElement(elModule['eset'], nModule['nset'], elModule['eIDWidget'].value, na, nb, elprop)
+    else: #find which node(s) should be a hinge
+        #duplicate them and add rotational dof
+        if (elModule['hinaWidget'].active):
+            hingeNode, dDof = na.duplicateAsHinge(nModule['nset'].getNextID(), nModule['nset'].getNextDOF())
+            nModule['nset'].add(hingeNode)
+            elModule['eset'].potentialddofs.append(dDof)
+            na = hingeNode
+        if (elModule['hinbWidget'].active):
+            hingeNode, dDof = nb.duplicateAsHinge(nModule['nset'].getNextID(), nModule['nset'].getNextDOF())
+            nModule['nset'].add(hingeNode)
+            elModule['eset'].potentialddofs.append(dDof)
+            nb = hingeNode
+        #create element with new rotational dof
+        nElement = createElement(elModule['eset'], nModule['nset'], elModule['eIDWidget'].value, na, nb, elprop)
+        #TODO: plot hinge symbol
+        node.updateCoordData(nModule['nset'], nodeCDS)
+        node.updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+        elModule['hinaWidget'].active = []
+        elModule['hinbWidget'].active = []
     if not nElement:
         return
     elModule['eset'].add(nElement)
@@ -192,21 +227,27 @@ def delElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, modeCDS, deb
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'], elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
-    deactivateBCModule(bcModule)
+    bc.deactivateBCModule(bcModule)
     elModule['assembleButton'].disabled = False
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def delAllElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, ssetCDS, modeCDS, debugInfo):
-    clearBCModule(bcModule, ssetCDS, debugInfo)
-    deactivateBCModule(bcModule)
+    bc.clearBCModule(bcModule, ssetCDS, debugInfo)
+    bc.deactivateBCModule(bcModule)
     clearElementModule(elModule, elemCDS, debugInfo)
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
-def assembleOnClick(elModule, bcModule, solModule, debugInfo):
+def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
     if elModule['eset'].members:
+        #check for dangling nodes, delete them and flag dangling rotational dofs
+        elModule['eset'].checkDanglingDOFs(elModule['eset'].potentialddofs)
+        nModule['nset'].cleanUpAfterHinges(elModule['eset'].ddofs)
+        node.updateCoordData(nModule['nset'], nodeCDS)
+        node.updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+        #assemble stiffness and mass matrices
         elModule['eset'].assemble()
         updateElementText(elModule['divElements'], elModule['eset'], True, debugInfo)
-        activateBCModule(bcModule)
+        bc.activateBCModule(bcModule)
         elModule['assembleButton'].disabled = True
         solModule['solveButton'].disabled = True
 
@@ -218,6 +259,8 @@ def createElementLayout(debug=False):
     eIDWidget = NumericInput(value=1, title="Element ID:",mode='int', width=50,height=50, disabled=True)
     enaWidget = NumericInput(value=1, title="Node A:",mode='int', width=50,height=50, disabled=True)
     enbWidget = NumericInput(value=2, title="Node B:",mode='int', width=50, disabled=True)
+    hinaWidget = CheckboxGroup(labels=['Hinge at A'], active=[], width=100, disabled=True)
+    hinbWidget = CheckboxGroup(labels=['Hinge at B'], active=[], width=100, disabled=True)
     eYoungWidget = NumericInput(value=3e10, title="E [Pa]",mode='float', width=100,height=50, disabled=True)
     eDensityWidget = NumericInput(value=2500, title="\u03C1 [kg/m\u00b3]:",mode='float', width=100,height=50, disabled=True)
     eAreaWidget = NumericInput(value=0.1030e-2, title="A [m\u00b2]:",mode='float', width=100,height=50, disabled=True)
@@ -230,6 +273,7 @@ def createElementLayout(debug=False):
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
+        'hinaWidget':hinaWidget, 'hinbWidget':hinbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
         'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
         'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements}

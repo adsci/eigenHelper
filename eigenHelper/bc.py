@@ -1,6 +1,6 @@
 from bokeh.models import Div, RadioButtonGroup, NumericInput, Button
 from utils import *
-from solver import checkModelOnClick
+import solver
 
 class Support():
     def __init__(self, typeID, node):
@@ -145,6 +145,7 @@ def updateSupportText(divText, supset, readyFlag, debugInfo):
 def clearBCModule(bcModule, ssetCDS, debugInfo):
     bcModule['sset'].clear()
     bcModule['addToNodeWidget'].value = 0
+    bcModule['rbg'].active = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
 
@@ -178,11 +179,11 @@ def delSupportOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, 
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 def delAllSupportsOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, debugInfo):
     clearBCModule(bcModule, ssetCDS, debugInfo)
-    checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 
 """

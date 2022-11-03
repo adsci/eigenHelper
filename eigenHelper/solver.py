@@ -71,7 +71,6 @@ def computeContinousDisplacement(elset, disp_extracted, sfac=None):
         sfac = 1*dl_max/ed_max
     for i in range(disp_extracted.shape[2]):
         ex_cont[:,:,i], ey_cont[:,:,i] = cfc.beam2crd(np.array(ex), np.array(ey), disp_extracted[:,:,i], sfac)
-    # print(ex_cont, ey_cont)
     return ex_cont, ey_cont, sfac
 
 def updateSolutionData(solModule, modeCDS, eigenmode):
@@ -137,7 +136,23 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     K = elModule['eset'].getStiffnessMatrix()
     M = elModule['eset'].getMassMatrix()
     bc = bcModule['sset'].gatherConstraints()
-    evals, evecs = cfc.eigen(K,M,bc)
+    #solve eigenvalue problem
+    ddofs = elModule['eset'].ddofs
+    if ddofs.any():
+        #dangling nodes need to be removed for the solution
+        remainingDofs = np.setdiff1d(np.arange(elModule['eset'].ndof), ddofs - 1)
+        Krem = K[np.ix_(remainingDofs,remainingDofs)]
+        Mrem = M[np.ix_(remainingDofs, remainingDofs)]
+        bcrem = np.copy(bc)
+        for dof in ddofs:
+            mask = np.where(bc > dof)
+            bcrem[mask] -= 1
+        evals, evecs = cfc.eigen(Krem,Mrem,bcrem)
+        #after solution add zeros where the dangling nodes were to make CALFEM functions work
+        for dof in ddofs:
+            evecs = np.insert(evecs, dof-1, 0, axis=0)
+    else:
+        evals, evecs = cfc.eigen(K,M,bc)
     a_extracted = extractEigenvectors(elModule['eset'], evecs)
     exc, eyc, sfac = computeContinousDisplacement(elModule['eset'], a_extracted)
     solution = {'eigenvalues':evals, 'eigenvectors':evecs, 'a_extracted':a_extracted, 'exc':exc, 'eyc':eyc, \
