@@ -76,11 +76,17 @@ class ElementSet(EntitySet):
     def getExEy(self):
         ex = []
         ey = []
+        idlist = []
+        xmid = []
+        ymid = []
         for elem in self.members:
             iex, iey = elem.getExEy()
             ex.append(iex)
             ey.append(iey)
-        return ex, ey
+            idlist.append(str(elem.getID()))
+            xmid.append(np.mean(iex))
+            ymid.append(np.mean(iey))
+        return ex, ey, idlist, xmid, ymid
 
     def getStiffnessMatrix(self):
         return self.K
@@ -142,8 +148,8 @@ def createElement(elset, nset, id, na, nb, elprop):
     return False
 
 def updateElementData(elemset, elemCDS):
-    ex, ey = elemset.getExEy()
-    elemCDS.data = {'x':ex, 'y':ey}
+    ex, ey, ids, xmid, ymid = elemset.getExEy()
+    elemCDS.data = {'x':ex, 'y':ey, 'IDs':ids, 'xmid':xmid, 'ymid':ymid }
 
 def updateElementText(divText, elemset, readyFlag, debugInfo):
     newText = ['<b>Elements</b>:<br>']
@@ -254,7 +260,7 @@ def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
         elModule['eset'].checkDanglingDOFs(elModule['eset'].potentialddofs)
         nModule['nset'].cleanUpAfterHinges(elModule['eset'].ddofs)
         node.updateCoordData(nModule['nset'], nodeCDS)
-        node.updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+        node.updateNodeText(nModule['divNodes'], nModule['nset'], True, debugInfo)
         #assemble stiffness and mass matrices
         elModule['eset'].assemble()
         updateElementText(elModule['divElements'], elModule['eset'], True, debugInfo)

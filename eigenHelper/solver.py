@@ -59,7 +59,7 @@ def computeContinousDisplacement(elset, disp_extracted, sfac=None):
     are computed from element nodal values using CALFEM function beam2crd and put into the corresponding
     column of ex_cont and ey_cont.
     """
-    ex, ey = elset.getExEy()
+    ex, ey, _, _, _ = elset.getExEy()
     nel = elset.getSize()
     ex_cont = np.zeros((nel,21,disp_extracted.shape[2]))
     ey_cont = np.zeros((nel,21,disp_extracted.shape[2]))
@@ -86,7 +86,7 @@ def updateSolutionData(solModule, modeCDS, eigenmode):
     modeCDS[1].text=f"f = {np.sqrt(solModule['solution']['eigenvalues'][eigenmode-1])/(2*np.pi):.2f} Hz"
 
 def clearModeCDS(modeCDS):
-    modeCDS[0].data = {}
+    modeCDS[0].data = {'x':[], 'y':[]}
     modeCDS[1].visible = False
     modeCDS[1].text=""
 

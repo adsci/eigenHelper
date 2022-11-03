@@ -5,13 +5,17 @@ from bokeh.plotting import figure
 def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p = figure(width=800, height=600, match_aspect=True)
     ### NODES
-    nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=5, color="navy", alpha=0.5, legend_label="Nodes")
-    nodeLabels = LabelSet(x='x', y='y', text='IDs',
+    nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
+    nodeLabels = LabelSet(x='x', y='y', text='IDs', text_color="purple", text_alpha=0.45,
             x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas')
     p.add_layout(nodeLabels)
     nodeRenderer.js_on_change('visible', CustomJS(args=dict(ls=nodeLabels), code="ls.visible = cb_obj.visible;"))
     ### ELEMENTS
-    p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=2, alpha=0.5, line_color='black', legend_label="Elements")
+    elRenderer = p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=2, alpha=0.5, line_color='black', legend_label="Elements")
+    elLabels = LabelSet(x='xmid', y='ymid', text='IDs', text_color="red", text_alpha=0.45, text_font_size='14px',
+            x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas')
+    p.add_layout(elLabels)
+    elRenderer.js_on_change('visible', CustomJS(args=dict(ls=elLabels), code="ls.visible = cb_obj.visible;"))
     ### SUPPORT
     p.image_url(url='urls', x='x', y='y', w='w', h='h', w_units='screen', h_units='screen', \
         anchor='top_center', source=ssetCDS[0], legend_label="Supports")
@@ -30,8 +34,8 @@ def createPlotLayout(nodeset, elemset, bcset):
     exNodes, eyNodes, idlist = nodeset.getExEy()
     ncds = ColumnDataSource({'x':exNodes, 'y':eyNodes, 'IDs':idlist})
     #Elements CDS
-    exElems, eyElems = elemset.getExEy()
-    ecds = ColumnDataSource({'x':exElems, 'y':eyElems})
+    exElems, eyElems, ids, xmid, ymid = elemset.getExEy()
+    ecds = ColumnDataSource({'x':exElems, 'y':eyElems, 'IDs':ids, 'xmid':xmid, 'ymid':ymid})
     #Support CDS
     exSupp, eySupp, wSupp, hSupp, urls = bcset.getExEy(horizontal=False)
     scdsVertical = ColumnDataSource({'x':exSupp, 'y':eySupp, 'w':wSupp, 'h':hSupp, 'urls':urls})
