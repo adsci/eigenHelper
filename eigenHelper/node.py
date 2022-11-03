@@ -14,6 +14,7 @@ class Node():
         self.id = id
         self.dofs = []
         self.dangling = False
+        self.hinge = False
 
     def printInfo(self, debug=False):
         if debug:
@@ -45,6 +46,7 @@ class Node():
     def duplicateAsHinge(self, hingeid, nextdof):
         hingeNode = deepcopy(self)
         hingeNode.setID(hingeid)
+        hingeNode.markAsHinge()
         hingeNode.dofs[-1] = nextdof
         danglingDof = self.markAsDangling()
         return hingeNode, danglingDof
@@ -52,6 +54,9 @@ class Node():
     def markAsDangling(self):
         self.dangling = True
         return self.dofs[-1]
+
+    def markAsHinge(self):
+        self.hinge = True
 
 class NodeSet(EntitySet):
     def foundCoords(self,x,y):
@@ -142,14 +147,29 @@ def addNodeOnClick(nModule, solModule, nodeCDS, debugInfo):
     nModule['assignDOFsButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, modeCDS, debugInfo):
+def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
     if (not nModule['nset'].members) or (not nModule['nset'].foundID(nModule['delNodeNumWidget'].value)[0]):
         return
+    #check for supports and remove
+    support = bcModule['sset'].foundAtNode(nModule['delNodeNumWidget'].value)
+    if support[0]:
+        bcModule['sset'].deleteAtNode(nModule['delNodeNumWidget'].value)
+        bc.updateSupportData(bcModule['sset'], ssetCDS)
+        bc.updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    #remove all elements connected to the deleted node
+    for el in elModule['eset'].members:
+        nodeids = [el.na.getID(), el.nb.getID()]
+        if nModule['delNodeNumWidget'].value in nodeids:
+            elModule['eset'].deleteEntityWithID(el.getID())
+            element.updateElementData(elModule['eset'], elemCDS)
+            element.updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+    #remove the node
     nModule['nset'].deleteEntityWithID(nModule['delNodeNumWidget'].value)
     nModule['delNodeNumWidget'].value = 0
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+    bc.deactivateBCModule(bcModule)
     element.deactivateElementModule(elModule)
     nModule['assignDOFsButton'].disabled = False
     solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)

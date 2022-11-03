@@ -219,9 +219,18 @@ def addElemOnClick(nModule, elModule, solModule, nodeCDS, elemCDS, debugInfo):
     elModule['assembleButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, modeCDS, debugInfo):
+def delElemOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, modeCDS, debugInfo):
     if (not elModule['eset'].members) or (not elModule['eset'].foundID(elModule['delElNumWidget'].value)[0]):
         return
+    #remove duplicated hinge nodes at element removal
+    elToDelete = elModule['eset'].getEntityWithID(elModule['delElNumWidget'].value)
+    nodes = [elToDelete.na, elToDelete.nb]
+    for n in nodes:
+        if n.hinge:
+            nModule['nset'].deleteEntityWithID(n.getID())
+            node.updateCoordData(nModule['nset'], nodeCDS)
+            node.updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+    #remove the element
     elModule['eset'].deleteEntityWithID(elModule['delElNumWidget'].value)
     elModule['delElNumWidget'].value = 0
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
