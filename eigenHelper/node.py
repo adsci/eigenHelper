@@ -161,6 +161,7 @@ def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, sse
         nodeids = [el.na.getID(), el.nb.getID()]
         if nModule['delNodeNumWidget'].value in nodeids:
             elModule['eset'].deleteEntityWithID(el.getID())
+            elModule['eIDWidget'].value = elModule['eset'].getNextID()
             element.updateElementData(elModule['eset'], elemCDS)
             element.updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
     #remove the node

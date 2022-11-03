@@ -195,11 +195,13 @@ def addElemOnClick(nModule, elModule, solModule, nodeCDS, elemCDS, debugInfo):
         if (elModule['hinaWidget'].active):
             hingeNode, dDof = na.duplicateAsHinge(nModule['nset'].getNextID(), nModule['nset'].getNextDOF())
             nModule['nset'].add(hingeNode)
+            nModule['nIDWidget'].value = nModule['nset'].getNextID()
             elModule['eset'].potentialddofs.append(dDof)
             na = hingeNode
         if (elModule['hinbWidget'].active):
             hingeNode, dDof = nb.duplicateAsHinge(nModule['nset'].getNextID(), nModule['nset'].getNextDOF())
             nModule['nset'].add(hingeNode)
+            nModule['nIDWidget'].value = nModule['nset'].getNextID()
             elModule['eset'].potentialddofs.append(dDof)
             nb = hingeNode
         #create element with new rotational dof
