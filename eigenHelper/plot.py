@@ -7,13 +7,13 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     ### NODES
     nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
     nodeLabels = LabelSet(x='x', y='y', text='IDs', text_color="purple", text_alpha=0.6, text_font_size='14px',
-            x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas', visible=False)
+            x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas', visible=True)
     p.add_layout(nodeLabels)
     nodeRenderer.js_on_change('visible', CustomJS(args=dict(ls=nodeLabels), code="ls.visible = cb_obj.visible;"))
     ### ELEMENTS
     elRenderer = p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=2, alpha=0.5, line_color='black', legend_label="Elements")
     elLabels = LabelSet(x='xmid', y='ymid', text='IDs', text_color="red", text_alpha=0.6, text_font_size='14px',
-            x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas', visible=False)
+            x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas', visible=True)
     p.add_layout(elLabels)
     elRenderer.js_on_change('visible', CustomJS(args=dict(ls=elLabels), code="ls.visible = cb_obj.visible;"))
     ### SUPPORT

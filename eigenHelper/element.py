@@ -269,7 +269,7 @@ def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
         solModule['solveButton'].disabled = True
 
 def toggleElementLabels(attr, old, new, labels):
-    show(labels['elements']) if new else hide(labels['elements'])
+    hide(labels['elements']) if new else show(labels['elements'])
 
 def toggleElementInfo(attr, old, new, elModule):
     show(elModule['divElements']) if new else hide(elModule['divElements'])
@@ -293,7 +293,7 @@ def createElementLayout(debug=False):
     delElemButton = Button(label="Remove Element", button_type="warning", width=120, disabled=True )
     delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
     assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
-    elemLabelsToggle= Toggle(label="Show Element Numbers", button_type='default', width=150)
+    elemLabelsToggle= Toggle(label="Hide Element Numbers", button_type='default', width=150)
     showElemInfoToggle = Toggle(label="Show Element Info", button_type='default', width=150)
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300, visible=False)
 

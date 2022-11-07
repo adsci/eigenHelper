@@ -192,7 +192,7 @@ def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
         solModule['solveButton'].disabled = True
 
 def toggleNodeLabels(attr, old, new, labels):
-    show(labels['nodes']) if new else hide(labels['nodes'])
+    hide(labels['nodes']) if new else show(labels['nodes'])
 
 def toggleNodeInfo(attr, old, new, nModule):
     show(nModule['divNodes']) if new else hide(nModule['divNodes'])
@@ -210,7 +210,7 @@ def createNodeLayout(debug=False):
     delNodeButton = Button(label="Remove Node", button_type="warning", width=50)
     assignDOFsButton = Button(label="Continue", button_type="success", width=50)
     delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10)
-    nodeLabelsToggle= Toggle(label="Show Node Numbers", button_type='default', width=150)
+    nodeLabelsToggle= Toggle(label="Hide Node Numbers", button_type='default', width=150)
     showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', \
         width=250, height=300, visible=False)
