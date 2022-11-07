@@ -1,6 +1,7 @@
 from bokeh.models import Div, RadioButtonGroup, NumericInput, Button, Toggle
 from utils import *
 import solver
+import howto
 
 class Support():
     def __init__(self, typeID, node):
@@ -122,11 +123,13 @@ def activateBCModule(bcModule):
         val.disabled = False
     bcModule['rbgDiv'].text = activateSupportImg(0)
 
-def deactivateBCModule(bcModule):
+def deactivateBCModule(bcModule, htModule):
     for _, val in bcModule.items():
         val.disabled = True
     bcModule['rbgDiv'].text = deactivateSupportImg()
     bcModule['showSupportInfoToggle'].disabled = False
+    htModule['colors'][2] = 'red'
+    howto.updateHowtoDiv(htModule)
 
 def updateSupportData(supportSet, ssetCDS):
     ex, ey, w, h, urls = supportSet.getExEy(horizontal=False)
@@ -143,12 +146,14 @@ def updateSupportText(divText, supset, readyFlag, debugInfo):
         newText.append('<br><p style="color:green"><b>Ready for check</b></p>')
     divText.text = ''.join(newText)
 
-def clearBCModule(bcModule, ssetCDS, debugInfo):
+def clearBCModule(bcModule, htModule, ssetCDS, debugInfo):
     bcModule['sset'].clear()
     bcModule['addToNodeWidget'].value = 0
     bcModule['rbg'].active = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    htModule['colors'][3] = 'red'
+    howto.updateHowtoDiv(htModule)
 
 """
 Boundary Conditions module callbacks
@@ -156,7 +161,7 @@ Boundary Conditions module callbacks
 def changeActiveBC(newChoice, bcModule):
     bcModule['rbgDiv'].text = activateSupportImg(newChoice)
 
-def addSupportOnClick(nModule, bcModule, solModule, ssetCDS, debugInfo):
+def addSupportOnClick(nModule, bcModule, solModule, htModule, ssetCDS, debugInfo):
     if not nModule['nset'].foundID(bcModule['addToNodeWidget'].value)[0]:
         return
     # #check whether the support can be added
@@ -170,9 +175,11 @@ def addSupportOnClick(nModule, bcModule, solModule, ssetCDS, debugInfo):
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
+    htModule['colors'][3] = 'green'
+    howto.updateHowtoDiv(htModule)
     solModule['solveButton'].disabled = True
 
-def delSupportOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, debugInfo):
+def delSupportOnClick(nModule, elModule, bcModule, solModule, htModule, ssetCDS, modeCDS, debugInfo):
     if (not bcModule['sset'].members) or (not bcModule['sset'].foundAtNode(bcModule['deleteFromNodeWidget'].value)[0]):
         return
     bcModule['sset'].deleteAtNode(bcModule['deleteFromNodeWidget'].value)
@@ -180,11 +187,13 @@ def delSupportOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, 
     bcModule['addToNodeWidget'].value = 0
     updateSupportData(bcModule['sset'], ssetCDS)
     updateSupportText(bcModule['divSupports'], bcModule['sset'], False, debugInfo)
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    htModule['colors'][3] = 'red'
+    howto.updateHowtoDiv(htModule)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def delAllSupportsOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeCDS, debugInfo):
-    clearBCModule(bcModule, ssetCDS, debugInfo)
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+def delAllSupportsOnClick(nModule, elModule, bcModule, solModule, htModule, ssetCDS, modeCDS, debugInfo):
+    clearBCModule(bcModule, htModule, ssetCDS, debugInfo)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
 
 def toggleSupportInfo(attr, old, new, bcModule):

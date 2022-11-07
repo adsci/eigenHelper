@@ -7,6 +7,7 @@ from element import *
 from bc import *
 from plot import *
 from solver import *
+from howto import *
 
 
 def modify_doc(doc, debug=False):
@@ -23,45 +24,53 @@ def modify_doc(doc, debug=False):
     #Create Solver module
     soldic = createSolverLayout(debug)
 
+    #Create Instructions module
+    hdic = createHowToLayout()
+
     #Create Plot module
     p,  lsets, ncds, ecds, scds, mcds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'])
+
 
     """
     Handlers
     """
     ndic['addNodeButton'].on_click(partial(addNodeOnClick, nModule=ndic, solModule=soldic, nodeCDS=ncds, debugInfo=debug))
     ndic['delNodeButton'].on_click(partial(delNodeOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
-        nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+        htModule=hdic, nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
-        nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
-    ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, debugInfo=debug))
+        htModule=hdic, nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+    ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, htModule=hdic,\
+        debugInfo=debug))
     ndic['nodeLabelsToggle'].on_change('active', partial(toggleNodeLabels, labels=lsets))
     ndic['showNodeInfoToggle'].on_change('active', partial(toggleNodeInfo, nModule=ndic))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, elemCDS=ecds, debugInfo=debug))
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
-        nodeCDS=ncds, elemCDS=ecds, modeCDS=mcds, debugInfo=debug))
+        htModule=hdic, nodeCDS=ncds, elemCDS=ecds, modeCDS=mcds, debugInfo=debug))
     edic['delAllElemButton'].on_click(partial(delAllElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
-        elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+        htModule=hdic, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     edic['assembleButton'].on_click(partial(assembleOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
-        nodeCDS=ncds, debugInfo=debug))
+        htModule=hdic, nodeCDS=ncds, debugInfo=debug))
     edic['elemLabelsToggle'].on_change('active', partial(toggleElementLabels, labels=lsets))
     edic['showElemInfoToggle'].on_change('active', partial(toggleElementInfo, elModule=edic))
 
     bcdic['rbg'].on_click(partial(changeActiveBC, bcModule=bcdic))
-    bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
+    bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, \
+        htModule=hdic, ssetCDS=scds, debugInfo=debug))
     bcdic['deleteSupportButton'].on_click(partial(delSupportOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
-        ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+        htModule=hdic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, \
-         solModule=soldic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+         solModule=soldic, htModule=hdic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     bcdic['showSupportInfoToggle'].on_change('active', partial(toggleSupportInfo, bcModule=bcdic))
 
-    soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
-    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
+    soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
+        htModule=hdic, modeCDS=mcds))
+    soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, htModule=hdic, modeCDS=mcds))
     soldic['modeSpinner'].on_change('value', partial(changeEigenmode, solModule=soldic, modeCDS=mcds))
     soldic['scaleSlider'].on_change('value', partial(changeScale, elModule=edic, solModule=soldic, modeCDS=mcds))
     soldic['flipButton'].on_click(partial(flip, elModule=edic, solModule=soldic, modeCDS=mcds))
 
+    hdic['showHelpToggle'].on_change('active', partial(toggleHelp, htModule = hdic))
     """
     Layout
     """
@@ -84,12 +93,15 @@ def modify_doc(doc, debug=False):
         soldic['divSolver'])
 
     plotLayout = column( row(Spacer(width = 30), ndic['nodeLabelsToggle'], Spacer(width=10), edic['elemLabelsToggle']), \
-        row(Spacer(width = 30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), bcdic['showSupportInfoToggle']), \
-        p, Spacer(height=50), row(Spacer(width = 30), solLayout))
+        row(Spacer(width=30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), \
+            bcdic['showSupportInfoToggle']), \
+        p, Spacer(height=50), row(Spacer(width=30), solLayout))
 
-    divLayout = row( ndic['divNodes'], edic['divElements'], bcdic['divSupports'])
+    divLayout = row(ndic['divNodes'], edic['divElements'], bcdic['divSupports'])
 
-    layout = row(column(nodeLayout, elemLayout, bcLayout), plotLayout, divLayout)
+    howtoLayout = column(hdic['showHelpToggle'], hdic['divHowto'])
+
+    layout = column(howtoLayout, row(column(nodeLayout, elemLayout, bcLayout), plotLayout, divLayout))
     doc.add_root(layout)
     doc.title = "eigenHelper"
 

@@ -3,6 +3,7 @@ from utils import *
 import node
 import bc
 import solver
+import howto
 
 class Element():
     def __init__(self, id, nodeA, nodeB, prop):
@@ -171,7 +172,7 @@ def deactivateElementModule(elModule):
     elModule['showElemInfoToggle'].disabled = False
     elModule['elemLabelsToggle'].disabled = False
 
-def clearElementModule(elModule, elemCDS, debugInfo):
+def clearElementModule(elModule, htModule, elemCDS, debugInfo):
     elModule['eset'].clear()
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     elModule['enaWidget'].value = 1
@@ -179,6 +180,8 @@ def clearElementModule(elModule, elemCDS, debugInfo):
     elModule['assembleButton'].disabled = False
     updateElementData(elModule['eset'], elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
+    htModule['colors'][2] = 'red'
+    howto.updateHowtoDiv(htModule)
 
 
 
@@ -228,7 +231,7 @@ def addElemOnClick(nModule, elModule, solModule, nodeCDS, elemCDS, debugInfo):
     elModule['assembleButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delElemOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, modeCDS, debugInfo):
+def delElemOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, elemCDS, modeCDS, debugInfo):
     if (not elModule['eset'].members) or (not elModule['eset'].foundID(elModule['delElNumWidget'].value)[0]):
         return
     #remove duplicated hinge nodes at element removal
@@ -245,17 +248,19 @@ def delElemOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, mod
     elModule['eIDWidget'].value = elModule['eset'].getNextID()
     updateElementData(elModule['eset'], elemCDS)
     updateElementText(elModule['divElements'], elModule['eset'], False, debugInfo)
-    bc.deactivateBCModule(bcModule)
+    bc.deactivateBCModule(bcModule, htModule)
     elModule['assembleButton'].disabled = False
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    htModule['colors'][2] = 'red'
+    howto.updateHowtoDiv(htModule)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def delAllElemOnClick(nModule, elModule, bcModule, solModule, elemCDS, ssetCDS, modeCDS, debugInfo):
-    bc.clearBCModule(bcModule, ssetCDS, debugInfo)
-    bc.deactivateBCModule(bcModule)
-    clearElementModule(elModule, elemCDS, debugInfo)
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+def delAllElemOnClick(nModule, elModule, bcModule, solModule, htModule, elemCDS, ssetCDS, modeCDS, debugInfo):
+    bc.clearBCModule(bcModule, htModule, ssetCDS, debugInfo)
+    bc.deactivateBCModule(bcModule, htModule)
+    clearElementModule(elModule, htModule, elemCDS, debugInfo)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
+def assembleOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, debugInfo):
     if elModule['eset'].members:
         #check for dangling nodes, delete them and flag dangling rotational dofs
         elModule['eset'].checkDanglingDOFs(elModule['eset'].potentialddofs)
@@ -265,6 +270,8 @@ def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
         #assemble stiffness and mass matrices
         elModule['eset'].assemble()
         updateElementText(elModule['divElements'], elModule['eset'], True, debugInfo)
+        htModule['colors'][2] = 'green'
+        howto.updateHowtoDiv(htModule)
         bc.activateBCModule(bcModule)
         elModule['assembleButton'].disabled = True
         solModule['solveButton'].disabled = True
@@ -293,7 +300,7 @@ def createElementLayout(debug=False):
     addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
     delElemButton = Button(label="Remove Element", button_type="warning", width=120, disabled=True )
     delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
-    assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
+    assembleButton = Button(label="Define Supports", button_type="success", width=50, disabled=True )
     elemLabelsToggle= Toggle(label="Hide Element Numbers", button_type='default', width=150)
     showElemInfoToggle = Toggle(label="Show Element Info", button_type='default', width=150)
     divElements = Div(text= "<b>Elements</b>:<br>", width=300, height=800, visible=False)

@@ -7,6 +7,7 @@ from copy import deepcopy
 import element
 import bc
 import solver
+import howto
 
 class Node():
     def __init__(self,x,y,id):
@@ -119,7 +120,7 @@ def updateNodeText(divText, nodeset, readyFlag, debugInfo):
         newText.append('<br><p style="color:green"><b>Ready for element input</b></p>')
     divText.text = ''.join(newText)
 
-def clearNodeModule(nModule, nodeCDS, debugInfo):
+def clearNodeModule(nModule, htModule, nodeCDS, debugInfo):
     nModule['nset'].clear()
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     nModule['nXWidget'].value = 0
@@ -127,6 +128,8 @@ def clearNodeModule(nModule, nodeCDS, debugInfo):
     nModule['assignDOFsButton'].disabled = False
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+    htModule['colors'][1] = 'red'
+    howto.updateHowtoDiv(htModule)
 
 
 
@@ -147,7 +150,7 @@ def addNodeOnClick(nModule, solModule, nodeCDS, debugInfo):
     nModule['assignDOFsButton'].disabled = False
     solModule['solveButton'].disabled = True
 
-def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
+def delNodeOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
     if (not nModule['nset'].members) or (not nModule['nset'].foundID(nModule['delNodeNumWidget'].value)[0]):
         return
     #check for supports and remove
@@ -170,23 +173,28 @@ def delNodeOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, sse
     nModule['nIDWidget'].value = nModule['nset'].getNextID()
     updateCoordData(nModule['nset'], nodeCDS)
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
-    bc.deactivateBCModule(bcModule)
+    bc.deactivateBCModule(bcModule, htModule)
+    htModule['colors'][3] = 'red'
     element.deactivateElementModule(elModule)
+    htModule['colors'][1] = 'red'
+    howto.updateHowtoDiv(htModule)
     nModule['assignDOFsButton'].disabled = False
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def delAllNodesOnClick(nModule, elModule, bcModule, solModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
-    clearNodeModule(nModule, nodeCDS, debugInfo)
-    bc.clearBCModule(bcModule, ssetCDS, debugInfo)
-    bc.deactivateBCModule(bcModule)
-    element.clearElementModule(elModule, elemCDS, debugInfo)
+def delAllNodesOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
+    bc.clearBCModule(bcModule, htModule, ssetCDS, debugInfo)
+    bc.deactivateBCModule(bcModule, htModule)
+    element.clearElementModule(elModule, htModule, elemCDS, debugInfo)
     element.deactivateElementModule(elModule)
-    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
+    clearNodeModule(nModule, htModule, nodeCDS, debugInfo)
+    solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
+def assignDOFsOnClick(nModule, elModule, solModule, htModule, debugInfo):
     if nModule['nset'].getSize() >= 2:
         nModule['nset'].assignDOFs()
         updateNodeText(nModule['divNodes'], nModule['nset'], True, debugInfo)
+        htModule['colors'][1] = 'green'
+        howto.updateHowtoDiv(htModule)
         element.activateElementModule(elModule, debugInfo)
         nModule['assignDOFsButton'].disabled = True
         solModule['solveButton'].disabled = True
@@ -208,7 +216,7 @@ def createNodeLayout(debug=False):
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
     addNodeButton = Button(label="Add Node", button_type="primary", width=50)
     delNodeButton = Button(label="Remove Node", button_type="warning", width=50)
-    assignDOFsButton = Button(label="Continue", button_type="success", width=50)
+    assignDOFsButton = Button(label="Define Elements", button_type="success", width=50)
     delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10)
     nodeLabelsToggle= Toggle(label="Hide Node Numbers", button_type='default', width=150)
     showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)

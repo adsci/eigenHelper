@@ -1,5 +1,6 @@
 from bokeh.models import Div, Button, Spinner, Slider
 from utils import *
+import howto
 
 def printMessage(message, color, divSol):
     divSol.text = f'<br><p style="color:{color}"><b>{message}</b></p>'
@@ -93,46 +94,58 @@ def clearModeCDS(modeCDS):
 """
 Solver module callbacks
 """
-def checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS):
-    if not nModule['nset'].members:
+def checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS):
+    if (not nModule['nset'].members) or (not nModule['assignDOFsButton'].disabled):
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
-        printMessage("No nodes were defined. Add model nodes and press Continue", "red", solModule['divSolver'])
+        printMessage("No nodes were defined or degrees of freedom were not assigned yet. Add model nodes and press Define Elements button", "red", solModule['divSolver'])
+        htModule['colors'] = ['black'] + 5*['red']
+        howto.updateHowtoDiv(htModule)
         return
-    if not elModule['eset'].members:
+    if (not elModule['eset'].members) or (not elModule['assembleButton'].disabled):
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
-        printMessage("No elements were defined. Add elements and press Continue", "red", solModule['divSolver'])
+        printMessage("No elements were defined or global matrices have not been assembled yet. Add elements and press Define Supports button", "red", solModule['divSolver'])
+        htModule['colors'] = ['black'] + ['green'] + 4*['red']
+        howto.updateHowtoDiv(htModule)
         return
     if not checkDanglingNodes(nModule['nset'], elModule['eset']):
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("There are free nodes (not associated with any element). Remove them or add elements.", "red", solModule['divSolver'])
+        htModule['colors'] = ['black'] + 5*['red']
+        howto.updateHowtoDiv(htModule)
         return
     if not bcModule['sset'].members:
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("No supports were defined. Add supports and try again", "red", solModule['divSolver'])
+        htModule['colors'] = ['black'] + 2*['green'] + 3*['red']
+        howto.updateHowtoDiv(htModule)
         return
     if not checkStiffnessSingularity(elModule['eset'], bcModule['sset']):
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
         printMessage("Stiffness matrix singular. Check boundary conditions", "red", solModule['divSolver'])
+        htModule['colors'] = ['black'] + 2*['green'] + 3*['red']
+        howto.updateHowtoDiv(htModule)
         return
     printMessage("Model check OK. Click Solve to proceed", "green", solModule['divSolver'])
     enableAndShow(solModule['solveButton'])
+    htModule['colors'] = ['black'] + 4*['green'] + ['red']
+    howto.updateHowtoDiv(htModule)
     for widget in [solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
         disableAndHide(widget)
     clearModeCDS(modeCDS)
     return
 
 
-def solveOnClick(elModule, bcModule, solModule, modeCDS):
+def solveOnClick(elModule, bcModule, solModule, htModule, modeCDS):
     K = elModule['eset'].getStiffnessMatrix()
     M = elModule['eset'].getMassMatrix()
     bc = bcModule['sset'].gatherConstraints()
@@ -166,6 +179,8 @@ def solveOnClick(elModule, bcModule, solModule, modeCDS):
     solModule['modeSpinner'].value = 1
     solModule['modeSpinner'].high = evals.shape[0]
     solModule['scaleSlider'].value = 1
+    htModule['colors'][5] = 'green'
+    howto.updateHowtoDiv(htModule)
 
 def changeEigenmode(attr, old, new, solModule, modeCDS):
     updateSolutionData(solModule, modeCDS, new)
