@@ -105,4 +105,4 @@ def modify_doc(doc, debug=False):
     doc.add_root(layout)
     doc.title = "eigenHelper"
 
-modify_doc(curdoc(),debug=True)
+modify_doc(curdoc(),debug=False)

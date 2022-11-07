@@ -38,6 +38,7 @@ Clicking the "Show Node Info" toggle located above the graph window lists
 all nodes that are currently present in the model along with their coordinates.
 
 To delete a node with a specific ID, enter this ID in the "Node to be deleted" input field and click "Remove Node".
+**Note that Node ID is always an integer, even though some nodes can be displayed with and "-H" suffix to signify that they represent a hinge.**
 It is also possible to remove all nodes at once by clicking the appropriate button - this can be used to quickly clear the model and start from the beginning.
 
 After all the necessary nodes have been defined, the user exits the module by clicking on the "Define Elements" button, after which the Element module is activated.
@@ -66,12 +67,13 @@ Currently, there are six possible support types to choose from (S1-S6).
 To choose a support, click on the appropriate button.
 To help the user, the symbol of the currently chosen support is highlighted.
 Having chosen the support, the user enters the ID of the node where the support is supposed to be and clicks on "Add Support".
+Only one support can be added to a node.
 
 When a support is created, its symbol is plotted on the canvas. It is possible to hide the support symbols by clicking on the corresponding entry in the legend.
 Clicking the "Show Support Info" toggle located above the graph window lists
 all supports that are currently present in the model along with their nodes.
 
-To remove all supports from a node with specific ID, enter that ID into the "Remove support at node" input field and click on Remove Support. 
+To remove support from a node with specific ID, enter that ID into the "Remove support at node" input field and click on Remove Support.
 Like previously, it is also possible to remove all supports from the model by
 clicking on the "Remove All Supports" button.
 

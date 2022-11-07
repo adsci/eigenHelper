@@ -19,12 +19,15 @@ class Node():
 
     def printInfo(self, debug=False):
         if debug:
-            return "Node " +str(self.getID()) + " at " + str(self.getCoords()) + " with DOFs " + str(self.getDOFs())
+            return "Node " + self.getName() + " at " + str(self.getCoords()) + " with DOFs " + str(self.getDOFs())
         else:
-            return "Node " +str(self.getID()) + " at " + str(self.getCoords())
+            return "Node " + self.getName() + " at " + str(self.getCoords())
 
     def getID(self):
         return self.id
+
+    def getName(self):
+        return str(self.getID())+'-H' if self.hinge else str(self.getID())
 
     def getX(self):
         return self.coords[0]
@@ -70,11 +73,19 @@ class NodeSet(EntitySet):
         xlist = []
         ylist = []
         idlist = []
+        xlist_h = []
+        ylist_h = []
+        idlist_h = []
         for node in self.members:
-            xlist.append(node.getX())
-            ylist.append(node.getY())
-            idlist.append(str(node.getID()))
-        return (np.array(xlist), np.array(ylist), idlist)
+            if not node.hinge:
+                xlist.append(node.getX())
+                ylist.append(node.getY())
+                idlist.append(str(node.getID()))
+            else:
+                xlist_h.append(node.getX())
+                ylist_h.append(node.getY())
+                idlist_h.append(str(node.getID()))
+        return [np.array(xlist), np.array(ylist), idlist], [np.array(xlist_h), np.array(ylist_h), idlist_h]
 
     def assignDOFs(self):
         for i, node in enumerate(self.members):
@@ -108,8 +119,9 @@ def createNode(nodeset, x, y, id):
     return False
 
 def updateCoordData(nodeset, nodeCDS):
-    ex, ey, ids = nodeset.getExEy()
-    nodeCDS.data = {'x':ex, 'y':ey, 'IDs':ids}
+    exey, exey_h = nodeset.getExEy()
+    nodeCDS[0].data = {'x':exey[0], 'y':exey[1], 'IDs':exey[2]}
+    nodeCDS[1].data = {'x':exey_h[0], 'y':exey_h[1], 'IDs':exey_h[2]}
 
 def updateNodeText(divText, nodeset, readyFlag, debugInfo):
     newText = ['<b>Nodes</b>:<br>']

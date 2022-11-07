@@ -5,9 +5,10 @@ from bokeh.plotting import figure
 def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p = figure(width=800, height=600, match_aspect=True)
     ### NODES
-    nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
+    nodeRenderer = p.circle('x', 'y', source=nsetCDS[1], size=16, color="white", fill_alpha=1, line_color="black", level="overlay", legend_label="Nodes")
+    nodeRenderer = p.circle('x', 'y', source=nsetCDS[0], size=8, color="navy", alpha=0.5, level="overlay", legend_label="Nodes")
     nodeLabels = LabelSet(x='x', y='y', text='IDs', text_color="purple", text_alpha=0.6, text_font_size='14px',
-            x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas', visible=True)
+            x_offset=10, y_offset=10, source=nsetCDS[0], render_mode='canvas', visible=True)
     p.add_layout(nodeLabels)
     nodeRenderer.js_on_change('visible', CustomJS(args=dict(ls=nodeLabels), code="ls.visible = cb_obj.visible;"))
     ### ELEMENTS
@@ -33,8 +34,8 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
 
 def createPlotLayout(nodeset, elemset, bcset):
     #Nodes CDS
-    exNodes, eyNodes, idlist = nodeset.getExEy()
-    ncds = ColumnDataSource({'x':exNodes, 'y':eyNodes, 'IDs':idlist})
+    exey, exey_h = nodeset.getExEy()
+    ncds = [ColumnDataSource({'x':exey[0], 'y':exey[1], 'IDs':exey[2]}), ColumnDataSource({'x':exey_h[0], 'y':exey_h[1], 'IDs':exey_h[2]})]
     #Elements CDS
     exElems, eyElems, ids, xmid, ymid = elemset.getExEy()
     ecds = ColumnDataSource({'x':exElems, 'y':eyElems, 'IDs':ids, 'xmid':xmid, 'ymid':ymid})

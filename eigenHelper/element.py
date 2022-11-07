@@ -20,7 +20,7 @@ class Element():
         return ex, ey
 
     def getNodes(self):
-        return [self.na.getID(), self.nb.getID()]
+        return [self.na.getName(), self.nb.getName()]
 
     def getProp(self):
         return self.properties
