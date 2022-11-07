@@ -6,14 +6,14 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p = figure(width=800, height=600, match_aspect=True)
     ### NODES
     nodeRenderer = p.circle('x', 'y', source=nsetCDS, size=7, color="navy", alpha=0.5, legend_label="Nodes")
-    nodeLabels = LabelSet(x='x', y='y', text='IDs', text_color="purple", text_alpha=0.45,
-            x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas')
+    nodeLabels = LabelSet(x='x', y='y', text='IDs', text_color="purple", text_alpha=0.6, text_font_size='14px',
+            x_offset=10, y_offset=10, source=nsetCDS, render_mode='canvas', visible=False)
     p.add_layout(nodeLabels)
     nodeRenderer.js_on_change('visible', CustomJS(args=dict(ls=nodeLabels), code="ls.visible = cb_obj.visible;"))
     ### ELEMENTS
     elRenderer = p.multi_line(xs='x', ys='y', source=elsetCDS, line_width=2, alpha=0.5, line_color='black', legend_label="Elements")
-    elLabels = LabelSet(x='xmid', y='ymid', text='IDs', text_color="red", text_alpha=0.45, text_font_size='14px',
-            x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas')
+    elLabels = LabelSet(x='xmid', y='ymid', text='IDs', text_color="red", text_alpha=0.6, text_font_size='14px',
+            x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas', visible=False)
     p.add_layout(elLabels)
     elRenderer.js_on_change('visible', CustomJS(args=dict(ls=elLabels), code="ls.visible = cb_obj.visible;"))
     ### SUPPORT
@@ -27,7 +27,9 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p.legend.location = "top_left"
     p.legend.click_policy="hide"
     p.add_layout(frequencyText)
-    return p
+    ### LABEL SETS
+    lsets = {'nodes':nodeLabels, 'elements':elLabels}
+    return p, lsets
 
 def createPlotLayout(nodeset, elemset, bcset):
     #Nodes CDS
@@ -49,6 +51,6 @@ def createPlotLayout(nodeset, elemset, bcset):
         background_fill_color='white', border_line_width=2, background_fill_alpha=1.0, visible=False)
     #Eigenmode CDS
     modecds = ( ColumnDataSource({'x':[], 'y':[]}), freqText )
-    p = makePlot(ncds, ecds, scds, modecds[0], modecds[1])
+    p, lsets = makePlot(ncds, ecds, scds, modecds[0], modecds[1])
 
-    return p, ncds, ecds, scds, modecds
+    return p, lsets, ncds, ecds, scds, modecds

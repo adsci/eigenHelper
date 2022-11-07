@@ -1,4 +1,4 @@
-from bokeh.models import Div, NumericInput, Button, CheckboxGroup
+from bokeh.models import Div, NumericInput, Button, CheckboxGroup, Toggle
 from utils import *
 import node
 import bc
@@ -268,6 +268,13 @@ def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
         elModule['assembleButton'].disabled = True
         solModule['solveButton'].disabled = True
 
+def toggleElementLabels(attr, old, new, labels):
+    if new:
+        labels['elements'].visible = True
+    else:
+        labels['elements'].visible = False
+
+
 """
 Element module layout
 """
@@ -287,11 +294,13 @@ def createElementLayout(debug=False):
     delElemButton = Button(label="Remove Element", button_type="warning", width=120, disabled=True )
     delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
     assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
+    elemLabelsToggle= Toggle(label="Show Element Numbers", button_type='default', width=150)
     divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'hinaWidget':hinaWidget, 'hinbWidget':hinbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
         'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
-        'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements}
+        'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements, \
+        'elemLabelsToggle':elemLabelsToggle}
     return elemLayoutDict

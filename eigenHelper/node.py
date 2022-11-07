@@ -1,7 +1,7 @@
 """
 Node module with helper function and classes
 """
-from bokeh.models import Div, NumericInput, Button
+from bokeh.models import Div, NumericInput, Button, Toggle
 from utils import *
 from copy import deepcopy
 import element
@@ -191,6 +191,11 @@ def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
         nModule['assignDOFsButton'].disabled = True
         solModule['solveButton'].disabled = True
 
+def toggleNodeLabels(attr, old, new, labels):
+    if new:
+        labels['nodes'].visible = True
+    else:
+        labels['nodes'].visible = False
 
 """
 Node module layout
@@ -201,13 +206,15 @@ def createNodeLayout(debug=False):
     nXWidget = NumericInput(value=0, title="x [m]:",mode='float', width=75,height=50)
     nYWidget = NumericInput(value=0, title="y [m]:",mode='float', width=75)
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
-    addNodeButton = Button(label="Add Node", button_type="primary", width=50 )
-    delNodeButton = Button(label="Remove Node", button_type="warning", width=50 )
-    assignDOFsButton = Button(label="Continue", button_type="success", width=50 )
-    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=100 )
+    addNodeButton = Button(label="Add Node", button_type="primary", width=50)
+    delNodeButton = Button(label="Remove Node", button_type="warning", width=50)
+    assignDOFsButton = Button(label="Continue", button_type="success", width=50)
+    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10 )
+    nodeLabelsToggle= Toggle(label="Show Node Numbers", button_type='default', width=150)
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', width=250, height=300)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
-        'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes}
+        'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes, \
+        'nodeLabelsToggle':nodeLabelsToggle}
     return nodeLayoutDict

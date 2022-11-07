@@ -24,7 +24,7 @@ def modify_doc(doc, debug=False):
     soldic = createSolverLayout(debug)
 
     #Create Plot module
-    p, ncds, ecds, scds, mcds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'])
+    p,  lsets, ncds, ecds, scds, mcds = createPlotLayout(ndic['nset'], edic['eset'], bcdic['sset'])
 
     """
     Handlers
@@ -35,6 +35,7 @@ def modify_doc(doc, debug=False):
     ndic['delAllNodesButton'].on_click(partial(delAllNodesOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
         nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, debugInfo=debug))
+    ndic['nodeLabelsToggle'].on_change('active', partial(toggleNodeLabels, labels=lsets))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, elemCDS=ecds, debugInfo=debug))
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
@@ -43,6 +44,7 @@ def modify_doc(doc, debug=False):
         elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     edic['assembleButton'].on_click(partial(assembleOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         nodeCDS=ncds, debugInfo=debug))
+    edic['elemLabelsToggle'].on_change('active', partial(toggleElementLabels, labels=lsets))
 
     bcdic['rbg'].on_click(partial(changeActiveBC, bcModule=bcdic))
     bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
@@ -80,7 +82,10 @@ def modify_doc(doc, debug=False):
             column(Spacer(height=10), soldic['flipButton'])), \
         soldic['divSolver'])
 
-    layout = row(column(nodeLayout, elemLayout, bcLayout), column(p, Spacer(height=50), solLayout))
+    plotLayout = column( row(Spacer(width = 30), ndic['nodeLabelsToggle'], Spacer(width=10), edic['elemLabelsToggle']), \
+         p, Spacer(height=50), row(Spacer(width = 30), solLayout))
+
+    layout = row(column(nodeLayout, elemLayout, bcLayout), plotLayout)
     doc.add_root(layout)
     doc.title = "eigenHelper"
 
