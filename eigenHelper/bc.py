@@ -1,4 +1,4 @@
-from bokeh.models import Div, RadioButtonGroup, NumericInput, Button
+from bokeh.models import Div, RadioButtonGroup, NumericInput, Button, Toggle
 from utils import *
 import solver
 
@@ -186,6 +186,9 @@ def delAllSupportsOnClick(nModule, elModule, bcModule, solModule, ssetCDS, modeC
     solver.checkModelOnClick(nModule, elModule, bcModule, solModule, modeCDS)
 
 
+def toggleSupportInfo(attr, old, new, bcModule):
+    show(bcModule['divSupports']) if new else hide(bcModule['divSupports'])
+
 """
 Boundary Conditions module layout
 """
@@ -199,9 +202,11 @@ def createBCLayout(debug=False):
     deleteAllSupportsButton = Button(label="Remove All Supports", button_type="danger", width=50, disabled=True)
     rbgText = deactivateSupportImg()
     rbgDiv = Div(text=rbgText, width=400, height=50)
-    divSupports = Div(text= "<b>Supports</b>:<br>", width=350, height=300)
+    showSupportInfoToggle = Toggle(label="Show Support Info", button_type='default', width=150)
+    divSupports = Div(text= "<b>Supports</b>:<br>", width=350, height=300, visible=False)
 
     bcLayoutDict = {'sset':sset, 'rbg':rbg, 'addToNodeWidget':addToNodeWidget, 'addSupportButton':addSupportButton, \
         'deleteFromNodeWidget':deleteFromNodeWidget, 'deleteSupportButton':deleteSupportButton, \
-        'deleteAllSupportsButton':deleteAllSupportsButton, 'rbgDiv':rbgDiv, 'divSupports':divSupports}
+        'deleteAllSupportsButton':deleteAllSupportsButton, 'rbgDiv':rbgDiv, 'divSupports':divSupports, \
+        'showSupportInfoToggle':showSupportInfoToggle}
     return bcLayoutDict

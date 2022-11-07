@@ -192,10 +192,10 @@ def assignDOFsOnClick(nModule, elModule, solModule, debugInfo):
         solModule['solveButton'].disabled = True
 
 def toggleNodeLabels(attr, old, new, labels):
-    if new:
-        labels['nodes'].visible = True
-    else:
-        labels['nodes'].visible = False
+    show(labels['nodes']) if new else hide(labels['nodes'])
+
+def toggleNodeInfo(attr, old, new, nModule):
+    show(nModule['divNodes']) if new else hide(nModule['divNodes'])
 
 """
 Node module layout
@@ -209,12 +209,14 @@ def createNodeLayout(debug=False):
     addNodeButton = Button(label="Add Node", button_type="primary", width=50)
     delNodeButton = Button(label="Remove Node", button_type="warning", width=50)
     assignDOFsButton = Button(label="Continue", button_type="success", width=50)
-    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10 )
+    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10)
     nodeLabelsToggle= Toggle(label="Show Node Numbers", button_type='default', width=150)
-    divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', width=250, height=300)
+    showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)
+    divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', \
+        width=250, height=300, visible=False)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
         'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes, \
-        'nodeLabelsToggle':nodeLabelsToggle}
+        'nodeLabelsToggle':nodeLabelsToggle, 'showNodeInfoToggle':showNodeInfoToggle}
     return nodeLayoutDict

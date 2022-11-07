@@ -269,11 +269,10 @@ def assembleOnClick(nModule, elModule, bcModule, solModule, nodeCDS, debugInfo):
         solModule['solveButton'].disabled = True
 
 def toggleElementLabels(attr, old, new, labels):
-    if new:
-        labels['elements'].visible = True
-    else:
-        labels['elements'].visible = False
+    show(labels['elements']) if new else hide(labels['elements'])
 
+def toggleElementInfo(attr, old, new, elModule):
+    show(elModule['divElements']) if new else hide(elModule['divElements'])
 
 """
 Element module layout
@@ -295,12 +294,13 @@ def createElementLayout(debug=False):
     delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
     assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
     elemLabelsToggle= Toggle(label="Show Element Numbers", button_type='default', width=150)
-    divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300)
+    showElemInfoToggle = Toggle(label="Show Element Info", button_type='default', width=150)
+    divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300, visible=False)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'hinaWidget':hinaWidget, 'hinbWidget':hinbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
         'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
         'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements, \
-        'elemLabelsToggle':elemLabelsToggle}
+        'elemLabelsToggle':elemLabelsToggle, 'showElemInfoToggle':showElemInfoToggle}
     return elemLayoutDict

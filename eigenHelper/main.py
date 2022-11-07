@@ -36,6 +36,7 @@ def modify_doc(doc, debug=False):
         nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     ndic['assignDOFsButton'].on_click(partial(assignDOFsOnClick, nModule=ndic, elModule=edic, solModule=soldic, debugInfo=debug))
     ndic['nodeLabelsToggle'].on_change('active', partial(toggleNodeLabels, labels=lsets))
+    ndic['showNodeInfoToggle'].on_change('active', partial(toggleNodeInfo, nModule=ndic))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, elemCDS=ecds, debugInfo=debug))
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
@@ -45,6 +46,7 @@ def modify_doc(doc, debug=False):
     edic['assembleButton'].on_click(partial(assembleOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         nodeCDS=ncds, debugInfo=debug))
     edic['elemLabelsToggle'].on_change('active', partial(toggleElementLabels, labels=lsets))
+    edic['showElemInfoToggle'].on_change('active', partial(toggleElementInfo, elModule=edic))
 
     bcdic['rbg'].on_click(partial(changeActiveBC, bcModule=bcdic))
     bcdic['addSupportButton'].on_click(partial(addSupportOnClick, nModule=ndic, bcModule=bcdic, solModule=soldic, ssetCDS=scds, debugInfo=debug))
@@ -52,6 +54,7 @@ def modify_doc(doc, debug=False):
         ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     bcdic['deleteAllSupportsButton'].on_click(partial(delAllSupportsOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, \
          solModule=soldic, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+    bcdic['showSupportInfoToggle'].on_change('active', partial(toggleSupportInfo, bcModule=bcdic))
 
     soldic['checkModelButton'].on_click(partial(checkModelOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
     soldic['solveButton'].on_click(partial(solveOnClick, elModule=edic, bcModule=bcdic, solModule=soldic, modeCDS=mcds))
@@ -83,7 +86,8 @@ def modify_doc(doc, debug=False):
         soldic['divSolver'])
 
     plotLayout = column( row(Spacer(width = 30), ndic['nodeLabelsToggle'], Spacer(width=10), edic['elemLabelsToggle']), \
-         p, Spacer(height=50), row(Spacer(width = 30), solLayout))
+        row(Spacer(width = 30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), bcdic['showSupportInfoToggle']), \
+        p, Spacer(height=50), row(Spacer(width = 30), solLayout))
 
     layout = row(column(nodeLayout, elemLayout, bcLayout), plotLayout)
     doc.add_root(layout)

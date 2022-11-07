@@ -55,3 +55,9 @@ def disableAndHide(widget):
 def enableAndShow(widget):
     widget.visible = True
     widget.disabled = False
+
+def show(div):
+    div.visible = True
+
+def hide(div):
+    div.visible = False
