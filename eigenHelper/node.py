@@ -213,7 +213,7 @@ def createNodeLayout(debug=False):
     nodeLabelsToggle= Toggle(label="Hide Node Numbers", button_type='default', width=150)
     showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', \
-        width=250, height=300, visible=False)
+        width=250, height=800, visible=False)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \

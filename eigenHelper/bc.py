@@ -126,6 +126,7 @@ def deactivateBCModule(bcModule):
     for _, val in bcModule.items():
         val.disabled = True
     bcModule['rbgDiv'].text = deactivateSupportImg()
+    bcModule['showSupportInfoToggle'].disabled = False
 
 def updateSupportData(supportSet, ssetCDS):
     ex, ey, w, h, urls = supportSet.getExEy(horizontal=False)
@@ -203,7 +204,7 @@ def createBCLayout(debug=False):
     rbgText = deactivateSupportImg()
     rbgDiv = Div(text=rbgText, width=400, height=50)
     showSupportInfoToggle = Toggle(label="Show Support Info", button_type='default', width=150)
-    divSupports = Div(text= "<b>Supports</b>:<br>", width=350, height=300, visible=False)
+    divSupports = Div(text= "<b>Supports</b>:<br>", width=250, height=800, visible=False)
 
     bcLayoutDict = {'sset':sset, 'rbg':rbg, 'addToNodeWidget':addToNodeWidget, 'addSupportButton':addSupportButton, \
         'deleteFromNodeWidget':deleteFromNodeWidget, 'deleteSupportButton':deleteSupportButton, \

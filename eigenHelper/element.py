@@ -168,7 +168,8 @@ def activateElementModule(elModule, debugInfo):
 def deactivateElementModule(elModule):
     for _, val in elModule.items():
         val.disabled = True
-    elModule['divElements'].disabled = False
+    elModule['showElemInfoToggle'].disabled = False
+    elModule['elemLabelsToggle'].disabled = False
 
 def clearElementModule(elModule, elemCDS, debugInfo):
     elModule['eset'].clear()
@@ -295,7 +296,7 @@ def createElementLayout(debug=False):
     assembleButton = Button(label="Continue", button_type="success", width=50, disabled=True )
     elemLabelsToggle= Toggle(label="Hide Element Numbers", button_type='default', width=150)
     showElemInfoToggle = Toggle(label="Show Element Info", button_type='default', width=150)
-    divElements = Div(text= "<b>Elements</b>:<br>", width=350, height=300, visible=False)
+    divElements = Div(text= "<b>Elements</b>:<br>", width=300, height=800, visible=False)
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'hinaWidget':hinaWidget, 'hinbWidget':hinbWidget, \

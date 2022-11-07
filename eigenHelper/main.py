@@ -67,17 +67,15 @@ def modify_doc(doc, debug=False):
     """
     nodeLayout = row(column(ndic['nIDWidget'], ndic['nXWidget'], ndic['nYWidget'], ndic['addNodeButton']), \
         column(Spacer(width=100,height=17), ndic['assignDOFsButton'], Spacer(width=100,height=ndic['nXWidget'].height+10), \
-            ndic['delNodeNumWidget'], ndic['delNodeButton'], ndic['delAllNodesButton']), Spacer(width=25), ndic['divNodes'])
+            ndic['delNodeNumWidget'], ndic['delNodeButton'], ndic['delAllNodesButton']))
 
     elemLayout =  row(column(edic['enaWidget'], edic['hinaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], edic['addElemButton']), \
                     column(edic['enbWidget'], edic['hinbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
                     column(edic['eIDWidget'], Spacer(width=100,height=47), edic['assembleButton'], edic['delElNumWidget'], \
-                         edic['delElemButton'], edic['delAllElemButton']), \
-                             Spacer(width=25), edic['divElements'])
+                         edic['delElemButton'], edic['delAllElemButton']))
 
     bcLayout = row(column(bcdic['rbg'], bcdic['rbgDiv'], row(column(bcdic['addToNodeWidget'], bcdic['addSupportButton']), Spacer(width=150),\
-        column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) )), \
-        Spacer(width=20), bcdic['divSupports'])
+        column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) )))
 
     solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), \
         row(soldic['modeSpinner'], Spacer(width=100), \
@@ -89,7 +87,9 @@ def modify_doc(doc, debug=False):
         row(Spacer(width = 30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), bcdic['showSupportInfoToggle']), \
         p, Spacer(height=50), row(Spacer(width = 30), solLayout))
 
-    layout = row(column(nodeLayout, elemLayout, bcLayout), plotLayout)
+    divLayout = row( ndic['divNodes'], edic['divElements'], bcdic['divSupports'])
+
+    layout = row(column(nodeLayout, elemLayout, bcLayout), plotLayout, divLayout)
     doc.add_root(layout)
     doc.title = "eigenHelper"
 
