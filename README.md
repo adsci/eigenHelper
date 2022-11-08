@@ -8,7 +8,7 @@ The calfem-based engine assembles the global mass and
 stiffness matrices and solves the corresponding eigenvalue problem.
 The obtained eigenvectors are used to reconstruct mode shapes of the structure, which are plotted for closer inspection.
 
-Copyright (C) 2022 Adam Sciegaj
+Copyright (c) 2022 Adam Sciegaj
 
 # Demonstration
 
