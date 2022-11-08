@@ -254,11 +254,15 @@ def delElemOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, el
     howto.updateHowtoDiv(htModule)
     solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
 
-def delAllElemOnClick(nModule, elModule, bcModule, solModule, htModule, elemCDS, ssetCDS, modeCDS, debugInfo):
+def delAllElemOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, elemCDS, ssetCDS, modeCDS, debugInfo):
     bc.clearBCModule(bcModule, htModule, ssetCDS, debugInfo)
     bc.deactivateBCModule(bcModule, htModule)
     clearElementModule(elModule, htModule, elemCDS, debugInfo)
+    nModule['nset'].removeHinges()
+    node.updateCoordData(nModule['nset'], nodeCDS)
+    node.updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     solver.checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
+    node.activateNodeModule(nModule, debugInfo)
 
 def assembleOnClick(nModule, elModule, bcModule, solModule, htModule, nodeCDS, debugInfo):
     if elModule['eset'].members:

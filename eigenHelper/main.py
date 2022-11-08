@@ -48,7 +48,7 @@ def modify_doc(doc, debug=False):
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         htModule=hdic, nodeCDS=ncds, elemCDS=ecds, modeCDS=mcds, debugInfo=debug))
     edic['delAllElemButton'].on_click(partial(delAllElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
-        htModule=hdic, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
+        htModule=hdic, nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
     edic['assembleButton'].on_click(partial(assembleOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
         htModule=hdic, nodeCDS=ncds, debugInfo=debug))
     edic['elemLabelsToggle'].on_change('active', partial(toggleElementLabels, labels=lsets))

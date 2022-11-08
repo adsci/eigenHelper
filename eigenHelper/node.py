@@ -109,6 +109,14 @@ class NodeSet(EntitySet):
         for danglingNode in flagged:
             self.deleteEntityWithID(danglingNode.getID())
 
+    def removeHinges(self):
+        todelete = []
+        for node in self.members:
+            if node.hinge:
+                todelete.append(node.getID())
+        for hid in todelete:
+            self.deleteEntityWithID(hid)
+
 
 def createNode(nodeset, x, y, id):
     fndCoords = nodeset.foundCoords(x,y)
@@ -143,6 +151,16 @@ def clearNodeModule(nModule, htModule, nodeCDS, debugInfo):
     htModule['colors'][1] = 'red'
     howto.updateHowtoDiv(htModule)
 
+def activateNodeModule(nModule, debugInfo):
+    for _, val in nModule.items():
+        val.disabled = False
+    updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
+
+def deactivateNodeModule(nModule):
+    for _, val in nModule.items():
+        val.disabled = True
+    nModule['showNodeInfoToggle'].disabled = False
+    nModule['nodeLabelsToggle'].disabled = False
 
 
 """
@@ -210,6 +228,7 @@ def assignDOFsOnClick(nModule, elModule, solModule, htModule, debugInfo):
         element.activateElementModule(elModule, debugInfo)
         nModule['assignDOFsButton'].disabled = True
         solModule['solveButton'].disabled = True
+        deactivateNodeModule(nModule)
 
 def toggleNodeLabels(attr, old, new, labels):
     hide(labels['nodes']) if new else show(labels['nodes'])
