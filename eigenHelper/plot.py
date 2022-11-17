@@ -18,8 +18,9 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
     p.add_layout(elLabels)
     elRenderer.js_on_change('visible', CustomJS(args=dict(ls=elLabels), code="ls.visible = cb_obj.visible;"))
     ttips = [ ("Element ID", "@IDs"), ("Elasticity modulus [Pa]", "@E{%0.3e}"), ("Density [kg/m^3]", "@rho"),
-                ("Cross-section area [m^2]", "@A"), ("Area Moment of Inertia [m^4]","@I"),  ]
-    hover = HoverTool(show_arrow=False, line_policy='interp', tooltips=ttips, formatters = {'@E':'printf'}, renderers=[elRenderer])
+                ("Cross-section area [m^2]", "@A{%0.3e}"), ("Area Moment of Inertia [m^4]","@I{%0.3e}"),  ]
+    hover = HoverTool(show_arrow=False, line_policy='interp', tooltips=ttips, renderers=[elRenderer])
+    hover.formatters = {'@E':'printf', '@A':'printf', '@I':'printf'}
     p.add_tools(hover)
     ### SUPPORT
     p.image_url(url='urls', x='x', y='y', w='w', h='h', w_units='screen', h_units='screen', \
