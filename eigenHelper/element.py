@@ -48,7 +48,6 @@ class Element():
         if debug:
             info = f"Element {self.getID()} with nodes {str(self.getNodes())}\n"
             info += f"with edof = {self.getEdof()}\n"
-            # info += f"Properties: E={self.getProp()['E']} Pa, rho={self.getProp()['rho']} kg/m3, A={self.getProp()['A']} m2, I={self.getProp()['I']} m4 \n"
             # info += f"Stiffness matrix: \n{self.Ke} \n"
             # info += f"Mass matrix: \n{self.Me} \n"
             # info += "<br>"
@@ -77,17 +76,39 @@ class ElementSet(EntitySet):
     def getExEy(self):
         ex = []
         ey = []
-        idlist = []
-        xmid = []
-        ymid = []
         for elem in self.members:
             iex, iey = elem.getExEy()
             ex.append(iex)
             ey.append(iey)
-            idlist.append(str(elem.getID()))
-            xmid.append(np.mean(iex))
-            ymid.append(np.mean(iey))
-        return ex, ey, idlist, xmid, ymid
+        return ex, ey
+
+    def getIDs(self):
+        ids = []
+        for elem in self.members:
+            ids.append(str(elem.getID()))
+        return ids
+
+    def getMidCoords(self):
+        xmid = []
+        ymid = []
+        ex, ey = self.getExEy()
+        for i, _iex in enumerate(self.members):
+            xmid.append(np.mean(ex[i]))
+            ymid.append(np.mean(ey[i]))
+        return xmid, ymid
+
+    def getProperties(self):
+        E = []
+        A = []
+        I = []
+        rho = []
+        for elem in self.members:
+            iprop = elem.getProp()
+            E.append(iprop['E'])
+            A.append(iprop['A'])
+            I.append(iprop['I'])
+            rho.append(iprop['rho'])
+        return E, A, I, rho
 
     def getStiffnessMatrix(self):
         return self.K
@@ -149,8 +170,11 @@ def createElement(elset, nset, id, na, nb, elprop):
     return False
 
 def updateElementData(elemset, elemCDS):
-    ex, ey, ids, xmid, ymid = elemset.getExEy()
-    elemCDS.data = {'x':ex, 'y':ey, 'IDs':ids, 'xmid':xmid, 'ymid':ymid }
+    ex, ey = elemset.getExEy()
+    ids = elemset.getIDs()
+    xmid, ymid = elemset.getMidCoords()
+    E, A, I, rho = elemset.getProperties()
+    elemCDS.data = {'x':ex, 'y':ey, 'IDs':ids, 'xmid':xmid, 'ymid':ymid, 'E':E, 'A':A, 'I':I, 'rho':rho }
 
 def updateElementText(divText, elemset, readyFlag, debugInfo):
     newText = ['<b>Elements</b>:<br>']

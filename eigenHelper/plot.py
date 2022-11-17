@@ -1,4 +1,4 @@
-from bokeh.models import ColumnDataSource, LabelSet, CustomJS, Label
+from bokeh.models import ColumnDataSource, LabelSet, CustomJS, Label, HoverTool
 from bokeh.plotting import figure
 
 
@@ -17,6 +17,10 @@ def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
             x_offset=10, y_offset=10, source=elsetCDS, render_mode='canvas', visible=True)
     p.add_layout(elLabels)
     elRenderer.js_on_change('visible', CustomJS(args=dict(ls=elLabels), code="ls.visible = cb_obj.visible;"))
+    ttips = [ ("Element ID", "@IDs"), ("Elasticity modulus [Pa]", "@E{%0.3e}"), ("Density [kg/m^3]", "@rho"),
+                ("Cross-section area [m^2]", "@A"), ("Area Moment of Inertia [m^4]","@I"),  ]
+    hover = HoverTool(show_arrow=False, line_policy='interp', tooltips=ttips, formatters = {'@E':'printf'}, renderers=[elRenderer])
+    p.add_tools(hover)
     ### SUPPORT
     p.image_url(url='urls', x='x', y='y', w='w', h='h', w_units='screen', h_units='screen', \
         anchor='top_center', source=ssetCDS[0], legend_label="Supports")
@@ -37,8 +41,11 @@ def createPlotLayout(nodeset, elemset, bcset):
     exey, exey_h = nodeset.getExEy()
     ncds = [ColumnDataSource({'x':exey[0], 'y':exey[1], 'IDs':exey[2]}), ColumnDataSource({'x':exey_h[0], 'y':exey_h[1], 'IDs':exey_h[2]})]
     #Elements CDS
-    exElems, eyElems, ids, xmid, ymid = elemset.getExEy()
-    ecds = ColumnDataSource({'x':exElems, 'y':eyElems, 'IDs':ids, 'xmid':xmid, 'ymid':ymid})
+    exElems, eyElems = elemset.getExEy()
+    ids = elemset.getIDs()
+    xmid, ymid = elemset.getMidCoords()
+    E, A, I, rho = elemset.getProperties()
+    ecds = ColumnDataSource({'x':exElems, 'y':eyElems, 'IDs':ids, 'xmid':xmid, 'ymid':ymid, 'E':E, 'A':A, 'I':I, 'rho':rho})
     #Support CDS
     exSupp, eySupp, wSupp, hSupp, urls = bcset.getExEy(horizontal=False)
     scdsVertical = ColumnDataSource({'x':exSupp, 'y':eySupp, 'w':wSupp, 'h':hSupp, 'urls':urls})

@@ -60,7 +60,7 @@ def computeContinousDisplacement(elset, disp_extracted, sfac=None):
     are computed from element nodal values using CALFEM function beam2crd and put into the corresponding
     column of ex_cont and ey_cont.
     """
-    ex, ey, _, _, _ = elset.getExEy()
+    ex, ey = elset.getExEy()
     nel = elset.getSize()
     ex_cont = np.zeros((nel,21,disp_extracted.shape[2]))
     ey_cont = np.zeros((nel,21,disp_extracted.shape[2]))
