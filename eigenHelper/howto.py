@@ -24,6 +24,11 @@ def createHowToContent():
     colors = ['black'] + 5*['red']
     return howtocontent, colors
 
+def makeTitle():
+    title = '<h1 style="font-family: helvetica; font-size:40pt; font-style:bold; display:inline"><em>eigenHelper</em></h1>' + \
+            '<p>Copyright (c) 2022 Adam Sciegaj</p> ' + \
+            '<a href="https://github.com/adsci/eigenHelper/blob/main/README.md">Full README</a>'
+    return title
 
 def converttohtml(text, bold, colors):
     html = ''
@@ -33,7 +38,7 @@ def converttohtml(text, bold, colors):
     return '<b>'+html+'</b>' if bold else html
 
 def updateHowtoDiv(htModule):
-    htModule['divHowto'].text = converttohtml(htModule['howtotext'], True, htModule['colors'])
+    htModule['divHowto'].text = makeTitle() + converttohtml(htModule['howtotext'], True, htModule['colors'])
 
 """
 Node module callbacks
@@ -46,7 +51,8 @@ HowTo module layout
 """
 def createHowToLayout():
     howtotext, colors = createHowToContent()
-    divHowto =  Div(text= converttohtml(howtotext,True,colors), width=1000, height=250, visible=False)
+    titletext = makeTitle()
+    divHowto =  Div(text= titletext + converttohtml(howtotext,True,colors), width=1000, height=350, visible=False)
     showHelpToggle = Toggle(label="Show/Hide Help", \
         button_type='default', width=50, height=50)
 
