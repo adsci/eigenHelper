@@ -13,7 +13,7 @@ ENV PYTHONPATH "/"
 COPY eigenHelper/ ./eigenHelper/
 #Import only core calfem functions to reduce the image size
 RUN curl -LJO https://raw.githubusercontent.com/CALFEM/calfem-python/master/calfem/core.py
-RUN cp core.py ./eigenHelper/calfem/
+RUN mkdir ./eigenHelper/calfem && mv core.py ./eigenHelper/calfem/
 
 ENTRYPOINT ["bokeh", "serve"]
 CMD ["eigenHelper", "--allow-websocket-origin=*"]
