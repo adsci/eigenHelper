@@ -150,6 +150,7 @@ def clearNodeModule(nModule, htModule, nodeCDS, debugInfo):
     updateNodeText(nModule['divNodes'], nModule['nset'], False, debugInfo)
     htModule['colors'][1] = 'red'
     howto.updateHowtoDiv(htModule)
+    activateNodeModule(nModule, debugInfo)
 
 def activateNodeModule(nModule, debugInfo):
     for _, val in nModule.items():
@@ -161,6 +162,7 @@ def deactivateNodeModule(nModule):
         val.disabled = True
     nModule['showNodeInfoToggle'].disabled = False
     nModule['nodeLabelsToggle'].disabled = False
+    nModule['resetButton'].disabled = False
 
 
 """
@@ -251,11 +253,12 @@ def createNodeLayout(debug=False):
     delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10)
     nodeLabelsToggle= Toggle(label="Hide Node Numbers", button_type='default', width=150)
     showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)
+    resetButton = Button(label="RESET", button_type="danger", width=10)
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', \
         width=250, height=800, visible=False)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
         'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes, \
-        'nodeLabelsToggle':nodeLabelsToggle, 'showNodeInfoToggle':showNodeInfoToggle}
+        'nodeLabelsToggle':nodeLabelsToggle, 'showNodeInfoToggle':showNodeInfoToggle, 'resetButton':resetButton}
     return nodeLayoutDict

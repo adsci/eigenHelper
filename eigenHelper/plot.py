@@ -3,7 +3,7 @@ from bokeh.plotting import figure
 
 
 def makePlot(nsetCDS, elsetCDS, ssetCDS, modeCDS, frequencyText):
-    p = figure(width=800, height=600, match_aspect=True)
+    p = figure(width=750, height=550, match_aspect=True)
     ### NODES
     nodeRenderer = p.circle('x', 'y', source=nsetCDS[1], size=16, color="white", fill_alpha=1, line_color="black", level="overlay", legend_label="Nodes")
     nodeRenderer = p.circle('x', 'y', source=nsetCDS[0], size=8, color="navy", alpha=0.5, level="overlay", legend_label="Nodes")

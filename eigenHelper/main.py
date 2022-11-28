@@ -43,6 +43,8 @@ def modify_doc(doc, debug=False):
         debugInfo=debug))
     ndic['nodeLabelsToggle'].on_change('active', partial(toggleNodeLabels, labels=lsets))
     ndic['showNodeInfoToggle'].on_change('active', partial(toggleNodeInfo, nModule=ndic))
+    ndic['resetButton'].on_click(partial(delAllNodesOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic,\
+        htModule=hdic, nodeCDS=ncds, elemCDS=ecds, ssetCDS=scds, modeCDS=mcds, debugInfo=debug))
 
     edic['addElemButton'].on_click(partial(addElemOnClick, nModule=ndic, elModule=edic, solModule=soldic, nodeCDS=ncds, elemCDS=ecds, debugInfo=debug))
     edic['delElemButton'].on_click(partial(delElemOnClick, nModule=ndic, elModule=edic, bcModule=bcdic, solModule=soldic, \
@@ -89,13 +91,13 @@ def modify_doc(doc, debug=False):
     solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), \
         row(soldic['modeSpinner'], Spacer(width=100), \
             soldic['scaleSlider'], \
-            column(Spacer(height=10), soldic['flipButton'])), \
-        soldic['divSolver'])
+            column(Spacer(height=10), soldic['flipButton'])))
 
-    plotLayout = column( row(Spacer(width = 30), ndic['nodeLabelsToggle'], Spacer(width=10), edic['elemLabelsToggle']), \
-        row(Spacer(width=30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), \
-            bcdic['showSupportInfoToggle']), \
-        p, Spacer(height=50), row(Spacer(width=30), solLayout))
+    plotLayout = column( row(Spacer(width=30), soldic['divSolver']), \
+                         row(Spacer(width = 30), ndic['nodeLabelsToggle'], Spacer(width=10), edic['elemLabelsToggle']), \
+                         row(Spacer(width=30), ndic['showNodeInfoToggle'], Spacer(width=10), edic['showElemInfoToggle'], Spacer(width=10), \
+                            bcdic['showSupportInfoToggle'], Spacer(width=120), ndic['resetButton']), \
+                        p, Spacer(height=10), row(Spacer(width=30), solLayout))
 
     divLayout = row(ndic['divNodes'], edic['divElements'], bcdic['divSupports'])
 

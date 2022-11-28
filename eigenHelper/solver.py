@@ -213,7 +213,7 @@ def createSolverLayout(debug=False):
     modeSpinner = Spinner(title="Eigenvalue", low=1, high=10, step=1, value=1, mode='int', width=75, visible=False, disabled=True)
     scaleSlider = Slider(start=0.01, end=3, value=1, step=0.01, title="Scale", disabled=True, visible=False, show_value=False)
     flipButton = Button(label="Flip", button_type="default", width=75, disabled=True, visible=False)
-    divSolver = Div(text= "", width=350, height=300)
+    divSolver = Div(text= "", width=500, height=75)
     solution = {}
 
     solverLayoutDict = {'checkModelButton': checkModelButton, 'solveButton':solveButton, \
