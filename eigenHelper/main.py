@@ -76,17 +76,21 @@ def modify_doc(doc, debug=False):
     """
     Layout
     """
-    nodeLayout = row(column(ndic['nIDWidget'], ndic['nXWidget'], ndic['nYWidget'], ndic['addNodeButton']), \
-        column(Spacer(width=100,height=17), ndic['assignDOFsButton'], Spacer(width=100,height=ndic['nXWidget'].height+10), \
-            ndic['delNodeNumWidget'], ndic['delNodeButton'], ndic['delAllNodesButton']))
+    nodeLayout = column(ndic['divLine'], \
+        row(column(ndic['nIDWidget'], ndic['nXWidget'], ndic['nYWidget'], ndic['addNodeButton'], ndic['assignDOFsButton']), \
+            Spacer(width = 135),\
+            column(Spacer(width=100,height=59), ndic['delNodeNumWidget'], Spacer(height=19), ndic['delNodeButton'], ndic['delAllNodesButton'])))
 
-    elemLayout =  row(column(edic['enaWidget'], edic['hinaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], edic['addElemButton']), \
-                    column(edic['enbWidget'], edic['hinbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
-                    column(edic['eIDWidget'], Spacer(width=100,height=47), edic['assembleButton'], edic['delElNumWidget'], \
-                         edic['delElemButton'], edic['delAllElemButton']))
+    elemLayout =  column(edic['divLine'], \
+        row(column(edic['enaWidget'], edic['hinaWidget'], edic['eYoungWidget'], edic['eAreaWidget'], \
+                            edic['addElemButton'], edic['assembleButton']), \
+            column(edic['enbWidget'], edic['hinbWidget'], edic['eDensityWidget'], edic['eInertiaWidget']), \
+            column(edic['eIDWidget'], Spacer(height=28), edic['delElNumWidget'], Spacer(height=19),\
+                        edic['delElemButton'], edic['delAllElemButton'])))
 
-    bcLayout = row(column(bcdic['rbg'], bcdic['rbgDiv'], row(column(bcdic['addToNodeWidget'], bcdic['addSupportButton']), Spacer(width=150),\
-        column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) )))
+    bcLayout = column(bcdic['divLine'],\
+        row(column(bcdic['rbg'], bcdic['rbgDiv'], row(column(bcdic['addToNodeWidget'], bcdic['addSupportButton']), Spacer(width=162),\
+            column(bcdic['deleteFromNodeWidget'], bcdic['deleteSupportButton'], bcdic['deleteAllSupportsButton']) ))))
 
     solLayout = column(row(soldic['checkModelButton'], soldic['solveButton']), \
         row(soldic['modeSpinner'], Spacer(width=100), \

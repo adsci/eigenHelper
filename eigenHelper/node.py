@@ -249,16 +249,19 @@ def createNodeLayout(debug=False):
     delNodeNumWidget = NumericInput(value=0, title="Node to be deleted:",mode='int', width=50)
     addNodeButton = Button(label="Add Node", button_type="primary", width=50)
     delNodeButton = Button(label="Remove Node", button_type="warning", width=50)
-    assignDOFsButton = Button(label="Define Elements", button_type="success", width=50)
-    delAllNodesButton = Button(label="Remove All Nodes", button_type="danger", width=10)
+    assignDOFsButton = Button(label="Go to Define Elements", button_type="success", width=100)
+    delAllNodesButton = Button(label="Remove All Nodes", button_type="warning", width=10)
     nodeLabelsToggle= Toggle(label="Hide Node Numbers", button_type='default', width=150)
     showNodeInfoToggle = Toggle(label="Show Node Info", button_type='default', width=150)
     resetButton = Button(label="RESET", button_type="danger", width=10)
     divNodes = Div(text= '<b>Nodes</b>:<br> <br><p style="color:red"><b>Click Continue when node input ready</b></p>', \
         width=250, height=800, visible=False)
+    divLine = Div(text= '<hr noshade width="400"><b>Define nodes:</b>', visible=True)
 
     nodeLayoutDict = {'nset': nset, 'nIDWidget':nIDWidget, 'nXWidget':nXWidget, 'nYWidget':nYWidget, \
         'delNodeNumWidget':delNodeNumWidget, 'addNodeButton':addNodeButton, 'delNodeButton':delNodeButton, \
         'delAllNodesButton':delAllNodesButton, 'assignDOFsButton':assignDOFsButton, 'divNodes':divNodes, \
-        'nodeLabelsToggle':nodeLabelsToggle, 'showNodeInfoToggle':showNodeInfoToggle, 'resetButton':resetButton}
+        'nodeLabelsToggle':nodeLabelsToggle, 'showNodeInfoToggle':showNodeInfoToggle, 'resetButton':resetButton, \
+        'divLine':divLine}
+
     return nodeLayoutDict

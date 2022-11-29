@@ -327,16 +327,18 @@ def createElementLayout(debug=False):
     delElNumWidget = NumericInput(value=0, title="Element to be deleted:",mode='int', width=50, disabled=True)
     addElemButton = Button(label="Add Element", button_type="primary", width=100, disabled=True )
     delElemButton = Button(label="Remove Element", button_type="warning", width=120, disabled=True )
-    delAllElemButton = Button(label="Remove All Elements", button_type="danger", width=120, disabled=True )
-    assembleButton = Button(label="Define Supports", button_type="success", width=50, disabled=True )
+    delAllElemButton = Button(label="Remove All Elements", button_type="warning", width=120, disabled=True )
+    assembleButton = Button(label="Go to Define Supports", button_type="success", width=50, disabled=True )
     elemLabelsToggle= Toggle(label="Hide Element Numbers", button_type='default', width=150)
     showElemInfoToggle = Toggle(label="Show Element Info", button_type='default', width=150)
     divElements = Div(text= "<b>Elements</b>:<br>", width=300, height=800, visible=False)
+    divLine = Div(text= '<hr noshade width="400"><b>Define elements:</b>', visible=True)
+
 
     elemLayoutDict = {'eset':eset, 'eIDWidget':eIDWidget, 'enaWidget':enaWidget, 'enbWidget':enbWidget, \
         'hinaWidget':hinaWidget, 'hinbWidget':hinbWidget, \
         'eYoungWidget':eYoungWidget, 'eDensityWidget':eDensityWidget, 'eAreaWidget':eAreaWidget, 'eInertiaWidget':eInertiaWidget, \
         'delElNumWidget':delElNumWidget, 'addElemButton':addElemButton, 'delElemButton':delElemButton, \
         'delAllElemButton':delAllElemButton, 'assembleButton': assembleButton, 'divElements':divElements, \
-        'elemLabelsToggle':elemLabelsToggle, 'showElemInfoToggle':showElemInfoToggle}
+        'elemLabelsToggle':elemLabelsToggle, 'showElemInfoToggle':showElemInfoToggle, 'divLine':divLine}
     return elemLayoutDict

@@ -43,7 +43,7 @@ To delete a node with a specific ID, enter this ID in the "Node to be deleted" i
 **Note that Node ID is always an integer, even though some nodes can be displayed with and "-H" suffix to signify that they represent a hinge.**
 It is also possible to remove all nodes at once by clicking the appropriate button - this can be used to quickly clear the model and start from the beginning.
 
-After all the necessary nodes have been defined, the user exits the module by clicking on the "Define Elements" button, after which the Element module is activated, and the Node module is locked to prevent tampering with the node set.
+After all the necessary nodes have been defined, the user exits the module by clicking on the "Go to Define Elements" button, after which the Element module is activated, and the Node module is locked to prevent tampering with the node set.
 
 ## Element module
 In the element module, the user specifies all the elements which define the structure.
@@ -56,12 +56,13 @@ When the above is specified, the element can be created by clicking "Add Element
 When an element is created, it is at once plotted on the canvas. It is possible to hide all elements by clicking on the corresponding entry in the legend. To hide element numbers, click the "Hide Element Numbers" toggle above the plot window.
 Clicking the "Show Element Info" toggle located above the graph window lists
 all elements that are currently present in the model along with their nodes.
+Hovering the mouse over an element in the plot will display the material material and cross-section properties of the element.
 
 To delete an element with a specific ID, enter this ID in the "Element to be deleted" input field and click "Remove Element".
 It is also possible to remove all elements at once by clicking the appropriate button.
 Apart from removing all elements, any hinges present in the model will also be removed, and the Node module will be activated.
 
-After all elements have been defined, the user exits the module by clicking on the "Define Supports" button, after which the Support module is activated.
+After all elements have been defined, the user exits the module by clicking on the "Go to Define Supports" button, after which the Support module is activated.
 
 ## Support module
 In the support module, the user defined the boundary conditions for the model.

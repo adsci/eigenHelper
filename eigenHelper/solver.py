@@ -99,7 +99,7 @@ def checkModelOnClick(nModule, elModule, bcModule, solModule, htModule, modeCDS)
         for widget in [solModule['solveButton'], solModule['modeSpinner'], solModule['scaleSlider'], solModule['flipButton'] ]:
             disableAndHide(widget)
         clearModeCDS(modeCDS)
-        printMessage("No nodes were defined or degrees of freedom were not assigned yet. Add model nodes and press Define Elements button", "red", solModule['divSolver'])
+        printMessage("No nodes were defined or degrees of freedom have not been assigned yet. Add model nodes and press Define Elements button", "red", solModule['divSolver'])
         htModule['colors'] = ['black'] + 5*['red']
         howto.updateHowtoDiv(htModule)
         return

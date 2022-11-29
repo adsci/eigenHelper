@@ -5,11 +5,11 @@ from utils import *
 def createHowToContent():
     introduction = "How to use this app:"
     nodeinfo = '''
-    1. Define model nodes. For each node, enter its coordinates and click "Add Node". When ready, click "Define Elements" button.
+    1. Define model nodes. For each node, enter its coordinates and click "Add Node". When ready, click "Go to Define Elements" button.
     '''
     eleminfo = '''
     2. Define elements. For each element, define its starting and ending node, as well as its material and geometrical properties.
-    Hinges can be defined by checking the appropriate box. When ready, click "Define Supports" button.
+    Hinges can be defined by checking the appropriate box. When ready, click "Go to Define Supports" button.
     '''
     supportinfo = '''
     3. Define supports by specifying the support type and the node at which the support is to be added.

@@ -209,14 +209,15 @@ def createBCLayout(debug=False):
     addSupportButton = Button(label="Add Support", button_type="primary", width=50, disabled=True)
     deleteFromNodeWidget = NumericInput(value=0, title="Remove support at node:",mode='int', width=50,height=50, disabled=True)
     deleteSupportButton = Button(label="Remove Support", button_type="warning", width=50, disabled=True)
-    deleteAllSupportsButton = Button(label="Remove All Supports", button_type="danger", width=50, disabled=True)
+    deleteAllSupportsButton = Button(label="Remove All Supports", button_type="warning", width=50, disabled=True)
     rbgText = deactivateSupportImg()
     rbgDiv = Div(text=rbgText, width=400, height=50)
     showSupportInfoToggle = Toggle(label="Show Support Info", button_type='default', width=150)
     divSupports = Div(text= "<b>Supports</b>:<br>", width=250, height=800, visible=False)
+    divLine = Div(text= '<hr noshade width="400"><b>Define supports:</b>', visible=True)
 
     bcLayoutDict = {'sset':sset, 'rbg':rbg, 'addToNodeWidget':addToNodeWidget, 'addSupportButton':addSupportButton, \
         'deleteFromNodeWidget':deleteFromNodeWidget, 'deleteSupportButton':deleteSupportButton, \
         'deleteAllSupportsButton':deleteAllSupportsButton, 'rbgDiv':rbgDiv, 'divSupports':divSupports, \
-        'showSupportInfoToggle':showSupportInfoToggle}
+        'showSupportInfoToggle':showSupportInfoToggle, 'divLine':divLine}
     return bcLayoutDict
