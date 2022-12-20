@@ -13,5 +13,5 @@
 		}
 	},
 
-	"postCreateCommand": "apt-get update && apt-get install -y git && cp -R /app/eigenHelper/calfem ./eigenHelper/"
+	"postCreateCommand": "apt-get update && apt-get install -y git"
 }
