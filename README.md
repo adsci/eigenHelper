@@ -12,8 +12,7 @@ Copyright (c) 2022 Adam Sciegaj
 
 # Demonstration
 
-For the purpose of demonstration, the app is deployed at 
-[http://eigenhelper.adsci.net](http://eigenhelper.adsci.net)
+For the purpose of demonstration, the app is deployed [here](http://eigenhelper.adsci.net:5006)
 # Installation
 
 Build the Docker container with
